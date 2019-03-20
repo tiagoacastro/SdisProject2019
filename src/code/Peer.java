@@ -36,8 +36,10 @@ public class Peer {
         @Override
         public void run() {
             if(sender){
-                getPacketMessage(mcSocket);
-                rd--;
+                while(rd != 0){
+                    getPacketMessage(mcSocket);
+                    rd--;
+                }
             }
         }
     }
