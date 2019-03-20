@@ -10,7 +10,6 @@ import java.util.TimerTask;
 
 public class Peer {
     private static final String chunk = "efipkf ojwm wjrwjwrj";             //hardcoded
-    private static final String store = "store";                            //hardcoded
     private static int mdbPort;
     private static int mcPort;
     private static MulticastSocket mdbSocket;
@@ -20,6 +19,8 @@ public class Peer {
     private static int rd = 0;                                              //hardcoded
     private static int serverId;
     private static String version;
+    private static String CR = "0xD";                                       //not sure
+    private static String LF = "0xA";                                       //not sure
 
     private enum MessageType {
         PUTCHUNK, STORED
@@ -30,7 +31,8 @@ public class Peer {
         public void run() {
             String message = getPacketMessage(mdbSocket);
             if(message != null && check(message)) {
-                message = addHeader(store, MessageType.STORED);
+                String[] params = new String[]{"1"};
+                message = addHeader(MessageType.STORED, params);
                 sendPacket(mcSocket, message, mcAddress, mcPort);
             }
         }
@@ -50,15 +52,16 @@ public class Peer {
 
     private static class Task extends TimerTask {
         public void run() {
-            String message = addHeader(chunk, MessageType.PUTCHUNK);
+            String[] params = new String[]{"1", ""+rd, chunk};
+            String message = addHeader(MessageType.PUTCHUNK, params);
             sendPacket(mdbSocket, message, mdbAddress, mdbPort);
         }
     }
 
-    private static String addHeader(String message, MessageType type){
+    private static String addHeader(MessageType type, String[] params){
 
 
-        return null;
+        return "";
     }
 
     private static boolean check(String message){
