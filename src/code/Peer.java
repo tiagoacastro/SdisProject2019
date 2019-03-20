@@ -21,12 +21,18 @@ public class Peer {
     private static int serverId;
     private static String version;
 
+    private enum MessageType {
+        PUTCHUNK, STORED
+    }
+
     private static class Mdb implements Runnable{
         @Override
         public void run() {
             String message = getPacketMessage(mdbSocket);
-            if(message != null && check(message))
-                sendPacket(mcSocket, store, mcAddress, mcPort);
+            if(message != null && check(message)) {
+                message = addHeader(store, MessageType.STORED);
+                sendPacket(mcSocket, message, mcAddress, mcPort);
+            }
         }
     }
 
@@ -44,8 +50,15 @@ public class Peer {
 
     private static class Task extends TimerTask {
         public void run() {
-            sendPacket(mdbSocket, chunk, mdbAddress, mdbPort);
+            String message = addHeader(chunk, MessageType.PUTCHUNK);
+            sendPacket(mdbSocket, message, mdbAddress, mdbPort);
         }
+    }
+
+    private static String addHeader(String message, MessageType type){
+
+
+        return null;
     }
 
     private static boolean check(String message){
