@@ -9,37 +9,35 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Peer {
-    private static final String chunk = "efipkf ojwm wjrwjwrj";
-    private static final String store = "store";
-    private static final String mdbAddr = "225.0.0.0";
-    private static final String mcAddr = "226.0.0.0";
-    private static final int mdbPort = 8008;
-    private static final int mcPort = 808;
+    private static final String chunk = "efipkf ojwm wjrwjwrj";             //hardcoded
+    private static final String store = "store";                            //hardcoded
+    private static int mdbPort;
+    private static int mcPort;
     private static MulticastSocket mdbSocket;
     private static InetAddress mdbAddress;
     private static MulticastSocket mcSocket;
     private static InetAddress mcAddress;
-    private static int rd = 0;
-    private static boolean sender;
+    private static int rd = 0;                                              //hardcoded
+    private static int serverId;
+    private static String version;
 
     private static class Mdb implements Runnable{
         @Override
         public void run() {
-            if(!sender) {
-                getPacketMessage(mdbSocket);
+            String message = getPacketMessage(mdbSocket);
+            if(message != null && check(message))
                 sendPacket(mcSocket, store, mcAddress, mcPort);
-            }
         }
     }
 
     private static class Mc implements Runnable{
         @Override
         public void run() {
-            if(sender){
-                while(rd != 0){
-                    getPacketMessage(mcSocket);
+            String message;
+            while(rd != 0){
+                message = getPacketMessage(mcSocket);
+                if(message != null && check(message))
                     rd--;
-                }
             }
         }
     }
@@ -48,6 +46,11 @@ public class Peer {
         public void run() {
             sendPacket(mdbSocket, chunk, mdbAddress, mdbPort);
         }
+    }
+
+    private static boolean check(String message){
+        String[] tokens = message.split(" ");
+        return Integer.parseInt(tokens[2]) == serverId;
     }
 
     private static String getPacketMessage(MulticastSocket socket){
@@ -113,10 +116,15 @@ public class Peer {
     }
 
     public static void main(String[] args) {
-        if(args.length != 1)
+        if(args.length != 6)
             return;
 
-        sender = (Integer.parseInt(args[0])==1);
+        version = args[0];
+        serverId = Integer.parseInt(args[1]);
+        String mdbAddr = args[2];
+        mdbPort = Integer.parseInt(args[3]);
+        String mcAddr = args[4];
+        mcPort = Integer.parseInt(args[5]);
 
         mdbAddress = getAddress(mdbAddr);
         mcAddress = getAddress(mcAddr);
@@ -128,7 +136,7 @@ public class Peer {
         setupThread(mdb);
         setupThread(mc);
 
-        if(sender){
+        if(serverId == 1){
             rd = 1;
             Timer t = new Timer();
             t.scheduleAtFixedRate(new Task(), 0, 1000);
