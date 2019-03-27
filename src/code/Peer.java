@@ -1,4 +1,4 @@
-package code;
+//package code;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -9,6 +9,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Peer {
+    private static MCchannel MC;
     private static final String chunk = "efipkf ojwm wjrwjwrj";             //hardcoded
     private static int mdbPort;
     private static int mcPort;
@@ -16,8 +17,8 @@ public class Peer {
     private static InetAddress mdbAddress;
     private static MulticastSocket mcSocket;
     private static InetAddress mcAddress;
-    private static int rd = 0;                                              //hardcoded
     private static int senderId;
+    private static int rd = 0;                                              //hardcoded
     private static String version;
     private static String CR = "0xD";                                       //not sure
     private static String LF = "0xA";                                       //not sure
@@ -38,7 +39,7 @@ public class Peer {
         }
     }
 
-    private static class Mc implements Runnable{
+/*    private static class Mc implements Runnable{
         @Override
         public void run() {
             String message;
@@ -48,7 +49,7 @@ public class Peer {
                     rd--;
             }
         }
-    }
+    }*/
 
     private static class Task extends TimerTask {
         public void run() {
@@ -165,12 +166,13 @@ public class Peer {
         mcPort = Integer.parseInt(args[5]);
 
         mdbAddress = getAddress(mdbAddr);
-        mcAddress = getAddress(mcAddr);
+//        mcAddress = getAddress(mcAddr);
         mdbSocket = getMCSocket(mdbAddress, mdbPort);
-        mcSocket = getMCSocket(mcAddress, mcPort);
+//        mcSocket = getMCSocket(mcAddress, mcPort);
 
         Thread mdb = new Thread(new Mdb());
-        Thread mc = new Thread(new Mc());
+        Thread mc = new Thread(new MCchannel(mcAddr, mcPort, senderId));
+        MC = new MCChannel(mcAddr, mcPort);
         setupThread(mdb);
         setupThread(mc);
 
