@@ -17,14 +17,14 @@ public class Peer {
     private static MulticastSocket mcSocket;
     private static InetAddress mcAddress;
     private static int rd = 0;                                              //hardcoded
-    private static int serverId;
+    private static int senderId;
     private static String version;
     private static String CR = "0xD";                                       //not sure
     private static String LF = "0xA";                                       //not sure
 
-    private enum MessageType {
+/*    private enum MessageType {
         PUTCHUNK, STORED
-    }
+    }*/
 
     private static class Mdb implements Runnable{
         @Override
@@ -32,7 +32,7 @@ public class Peer {
             String message = getPacketMessage(mdbSocket);
             if(message != null && check(message)) {
                 String[] params = new String[]{"1"};
-                message = addHeader(MessageType.STORED, params);
+                message = addHeader("STORED", params);
                 sendPacket(mcSocket, message, mcAddress, mcPort);
             }
         }
@@ -52,21 +52,42 @@ public class Peer {
 
     private static class Task extends TimerTask {
         public void run() {
-            String[] params = new String[]{"1", ""+rd, chunk};
-            String message = addHeader(MessageType.PUTCHUNK, params);
+            String[] params = new String[]{"1", String.valueOf(rd), chunk};
+            String message = addHeader("PUTCHUNK", params);
             sendPacket(mdbSocket, message, mdbAddress, mdbPort);
         }
     }
 
-    private static String addHeader(MessageType type, String[] params){
+    private static String addHeader(String type, String[] params){
 
+        String fileId = "1"; //hardcoded
+        String chunkId = "1"; //hardcoded
 
-        return "";
+        String message = type + " " + 
+                         version + " " + 
+                         senderId + " " +
+                         fileId;
+
+        for(int i = 0; i < params.length; i++)
+        {
+            message += " " + params[i];
+
+            if(i == params.length - 2)
+                if(type == "PUTCHUNK" || type == "CHUNK")
+                    break;
+        }
+
+        message += "\r\n\r\n";
+
+        if(type == "PUTCHUNK" || type == "CHUNK")
+            message += chunk; 
+
+        return message;
     }
 
     private static boolean check(String message){
         String[] tokens = message.split(" ");
-        return Integer.parseInt(tokens[2]) == serverId;
+        return Integer.parseInt(tokens[2]) != senderId;
     }
 
     private static String getPacketMessage(MulticastSocket socket){
@@ -75,6 +96,7 @@ public class Peer {
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             System.out.println("wait");
             socket.receive(packet);
+            System.out.println(new String(packet.getData(), 0, packet.getLength()));
             System.out.println("Received packet");
             return new String(packet.getData()).replaceAll("\0", "");
         } catch(IOException e){
@@ -136,7 +158,7 @@ public class Peer {
             return;
 
         version = args[0];
-        serverId = Integer.parseInt(args[1]);
+        senderId = Integer.parseInt(args[1]);
         String mdbAddr = args[2];
         mdbPort = Integer.parseInt(args[3]);
         String mcAddr = args[4];
@@ -152,7 +174,7 @@ public class Peer {
         setupThread(mdb);
         setupThread(mc);
 
-        if(serverId == 1){
+        if(senderId == 1){
             rd = 1;
             Timer t = new Timer();
             t.scheduleAtFixedRate(new Task(), 0, 1000);
