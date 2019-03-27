@@ -9,6 +9,7 @@ import java.util.Hashtable;
 
 
 public class Server implements Runnable{
+    private static ServerSocket serverSocket;
     private static Socket socket;
     private static PrintWriter out;
     private static BufferedReader in;
@@ -16,20 +17,30 @@ public class Server implements Runnable{
 
     public void run() {
         String str = "";
-        String answer;
 
         while(!str.equals("STOP")){
             str = "";
 
             try {
-                while(str.equals(""))
+                socket = serverSocket.accept();
+                out = new PrintWriter(socket.getOutputStream(), true);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            } catch(IOException e){
+                System.err.println("Error creating socket or setting up streams");
+                return;
+            }
+
+            try {
+                while(str == null || str.equals(""))
                     str = in.readLine();
                 System.out.println("Received packet");
             } catch(IOException e){
                 System.err.println("Error receiving packet");
+                return;
             }
 
             String[] tokens = str.split(" ");
+            String answer;
 
             if (tokens[0].equals("REGISTER") && tokens.length == 3){
                 System.out.println("<" + tokens[0] + "> <" + tokens[1] + "> <" + tokens[2].replaceAll("\0", "") + ">");
@@ -61,12 +72,9 @@ public class Server implements Runnable{
         int port = Integer.parseInt(args[0]);
 
         try {
-            ServerSocket serverSocket = new ServerSocket(port);
-            socket = serverSocket.accept();
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            serverSocket = new ServerSocket(port);
         } catch(IOException e){
-            System.err.println("Error creating socket or setting up streams");
+            System.err.println("Error creating server socket");
             return;
         }
 

@@ -38,6 +38,8 @@ public class Client {
                 answer = in.readLine();
             System.out.println("Received packet: " + answer);
             socket.close();
+            out.close();
+            in.close();
         } catch(IOException e){
             System.err.println("Error receiving packet or closing socket");
         }
