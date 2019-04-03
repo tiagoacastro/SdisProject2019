@@ -13,10 +13,13 @@ public class Peer {
     private static final String chunk = "efipkf ojwm wjrwjwrj";             //hardcoded
     private static int mdbPort;
     private static int mcPort;
+    private static int mdrPort;
     private static MulticastSocket mdbSocket;
     private static InetAddress mdbAddress;
     private static MulticastSocket mcSocket;
     private static InetAddress mcAddress;
+    private static MulticastSocket mdrSocket;
+    private static InetAddress mdrAddress;
     private static int senderId;
     private static int rd = 0;                                              //hardcoded
     private static String version;
@@ -46,7 +49,37 @@ public class Peer {
             while(rd != 0){
                 message = getPacketMessage(mcSocket);
                 if(message != null && check(message))
-                    rd--;
+                {
+                    String[] tokens = message.split(" ");
+                    String messageType = tokens[0];
+
+                    if(messageType == "STORED")
+                        rd--;
+                    
+                    else if (messageType == "GETCHUNK")
+                    {
+                        
+                    }
+                }
+            }
+        }
+    }
+
+    private static class Mdr implements Runnable{
+        @Override
+        public void run() {
+            String message;
+            while(rd != 0){
+                message = getPacketMessage(mcSocket);
+                if(message != null && check(message))
+                {
+                    if(hasChunk())
+                    {
+                        String[] params = new String[]{"1"};
+                        message = addHeader("CHUNK", params);
+                        sendPacket(mdrSocket, message, mcAddress, mcPort);
+                    }
+                }
             }
         }
     }
@@ -62,8 +95,7 @@ public class Peer {
     private static String addHeader(String type, String[] params){
 
         String fileId = "1"; //hardcoded
-        String chunkId = "1"; //hardcoded
-
+        
         String message = type + " " + 
                          version + " " + 
                          senderId + " " +
@@ -89,6 +121,11 @@ public class Peer {
     private static boolean check(String message){
         String[] tokens = message.split(" ");
         return Integer.parseInt(tokens[2]) != senderId;
+    }
+
+    private static boolean hasChunk() {
+        // Checks if peer has desired chunk. 
+        return true;
     }
 
     private static String getPacketMessage(MulticastSocket socket){
@@ -164,18 +201,24 @@ public class Peer {
         mdbPort = Integer.parseInt(args[3]);
         String mcAddr = args[4];
         mcPort = Integer.parseInt(args[5]);
+//        String mdrAddr = args[6];
+//        mdrPort = Integer.parseInt(args[7]);
 
         mdbAddress = getAddress(mdbAddr);
         mcAddress = getAddress(mcAddr);
+//        mdrAddress = getAddress(mdrAddr);
         mdbSocket = getMCSocket(mdbAddress, mdbPort);
         mcSocket = getMCSocket(mcAddress, mcPort);
+//        mdrSocket = getMCSocket(mdrAddress, mdrPort);
 
         Thread mdb = new Thread(new Mdb());
         Thread mc = new Thread(new Mc());
+//        Thread mdr = new Thread(new Mdr());
         //Thread mc = new Thread(new MCchannel(mcAddr, mcPort, senderId));
         //MC = new MCchannel(mcAddr, mcPort, senderId);
         setupThread(mdb);
         setupThread(mc);
+//        setupThread(mdr);
 
         if(senderId == 1){
             rd = 1;
