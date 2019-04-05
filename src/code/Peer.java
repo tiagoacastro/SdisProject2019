@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Peer {
@@ -45,10 +46,10 @@ public class Peer {
 
         public void store(int chunkNo, int senderId) {
             rd--;
-            peers.get(chunkNo - 1).add(senderId);
+            peers.get(chunkNo).add(senderId);
         }
 
-        public void getChunks() {
+        private void getChunks() {
             int maxChunkSize = 64000, chunkNo = 0, bytesRead;
             byte[] buf = new byte[maxChunkSize];
 
@@ -65,14 +66,14 @@ public class Peer {
                 while ((bytesRead = inputStream.read(buf)) > 0) {
                     byte[] trimmedBuf  = Arrays.copyOf(buf, bytesRead);
 
-                    Chunk chunk = new Chunk(chunkNo, 1, trimmedBuf);
+                    Chunk chunk = new Chunk(chunkNo, "1", trimmedBuf);
                     this.chunks.add(chunk);
                     chunkNo++;
                 }
 
                 if(this.file.length() % maxChunkSize == 0)
                 {
-                    Chunk chunk = new Chunk(chunkNo, 1, null);
+                    Chunk chunk = new Chunk(chunkNo, "1", null);
                     this.chunks.add(chunk);
                 }
 
@@ -84,39 +85,64 @@ public class Peer {
 
         }
 
+        private void sendChunk(Chunk chunk)
+        {
+            String body = new String(chunk.getBody(), StandardCharsets.UTF_8);
+
+            count = 0;
+            ignore = 0;
+            sends = 0;
+
+            while(true) {
+                if (count == ignore) {
+                    if (peers.get(0).size() < rd) {
+                        System.out.println("rd not achieved");
+                        String[] params = new String[]{String.valueOf(chunk.getFileId()), String.valueOf(chunk.getNumber()), String.valueOf(rd), chunk.getBody()};
+                        String message = addHeader("PUTCHUNK", params);
+                        sendPacket(mdbSocket, message, mdbAddress, mdbPort);
+                        sends++;
+                        if (this.sends == 5) {
+                            System.out.println("too many sends");
+                            break;
+                        } else {
+                            count = 0;
+                            switch (sends) {
+                                case 2:
+                                    ignore = 1;
+                                    break;
+                                case 3:
+                                    ignore = 3;
+                                    break;
+                                case 4:
+                                    ignore = 7;
+                                    break;
+                            }
+                        }
+                    } else {
+                        System.out.println("rd achieved");
+                        break;
+                    }
+                } else
+                    count++;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+            }
+        }
+
         public void run() {
             getChunks();
 
-            if (count == ignore) {
-                if (peers.get(0).size() < rd) {
-                    System.out.println("rd not achieved");
-                    String[] params = new String[]{"1", "1", String.valueOf(rd), "CONTENT OF THE FILE"};
-                    String message = addHeader("PUTCHUNK", params);
-                    sendPacket(mdbSocket, message, mdbAddress, mdbPort);
-                    sends++;
-                    if (this.sends == 5) {
-                        System.out.println("too many sends");
-                        t.cancel();
-                    } else {
-                        count = 0;
-                        switch (sends) {
-                            case 2:
-                                ignore = 1;
-                                break;
-                            case 3:
-                                ignore = 3;
-                                break;
-                            case 4:
-                                ignore = 7;
-                                break;
-                        }
-                    }
-                } else {
-                    System.out.println("rd achieved");
-                    t.cancel();
-                }
-            } else
-                count++;
+            for(Chunk c: this.chunks)
+            {
+                System.out.println("Sending chunk #" + c.getNumber());
+                sendChunk(c);
+            }
+
+            t.cancel();
         }
     }
 
@@ -127,6 +153,22 @@ public class Peer {
             if (message != null) {
                 String[] tokens = message.split(" ");
                 if (check(tokens) && tokens[0].equals("PUTCHUNK")) {
+
+                    FileOutputStream out = null;
+                    try {
+                        out = new FileOutputStream("code/test.txt");
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        for(int i = 7; i < tokens.length; i++)
+                            out.write(tokens[i].getBytes());
+
+                        out.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                     String[] params = new String[]{tokens[3], tokens[4]};
                     message = addHeader("STORED", params);
                     sendPacket(mcSocket, message, mcAddress, mcPort);
@@ -145,7 +187,9 @@ public class Peer {
                 if (check(tokens) && tokens[0].equals("STORED")) {
                     Request req = requests.get(tokens[3]);
                     req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
-                } else if (check(tokens) && tokens[0].equals("GETCHUNK")) {
+                }
+
+                else if (check(tokens) && tokens[0].equals("GETCHUNK")) {
                     if (hasChunk()) {
                         String[] params = new String[]{tokens[3], tokens[4], "CONTENT OF THE FILE"};
                         message = addHeader("CHUNK", params);
@@ -212,7 +256,6 @@ public class Peer {
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             System.out.println("wait");
             socket.receive(packet);
-            System.out.println(new String(packet.getData(), 0, packet.getLength()));
             System.out.println("Received packet");
             return new String(packet.getData()).replaceAll("\0", "");
         } catch (IOException e) {
@@ -313,9 +356,10 @@ public class Peer {
 
             Timer t = new Timer();
             Request req = new Request(t, file_path, rd);
-            requests.put(file_path, req);
+            requests.put("1", req);
             t.scheduleAtFixedRate(req, 0, 1000);
         }
+
     }
 }
 
