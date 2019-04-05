@@ -1,14 +1,11 @@
 package code;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class Peer {
     //private static MCchannel MC;
@@ -29,32 +26,71 @@ public class Peer {
         PUTCHUNK, STORED
     }*/
 
-    private static class Request extends TimerTask{
+    private static class Request extends TimerTask {
         private Timer t;
-        private String file;
+        private File file;
         private int rd;
         private int sends = 0;
         private int ignore = 0;
         private int count = 0;
         private ArrayList<ArrayList<Integer>> peers = new ArrayList<>();
+        private ArrayList<Chunk> chunks = new ArrayList<>();
 
-        Request(Timer t, String file, int rd){
-            this.file = file;
+        Request(Timer t, String fp, int rd) {
+            this.file = new File(fp);
             this.rd = rd;
             this.t = t;
             peers.add(new ArrayList<>());
         }
 
-        public void store(int chunkNo, int senderId){
+        public void store(int chunkNo, int senderId) {
             rd--;
-            peers.get(chunkNo-1).add(senderId);
+            peers.get(chunkNo - 1).add(senderId);
+        }
+
+        public void getChunks() {
+            int maxChunkSize = 64000, chunkNo = 0, bytesRead;
+            byte[] buf = new byte[maxChunkSize];
+
+            BufferedInputStream inputStream = null;
+
+            try {
+                inputStream = new BufferedInputStream(new FileInputStream(file));
+            } catch (FileNotFoundException e) {
+                System.err.println("Error opening file");
+                System.exit(-5);
+            }
+
+            try {
+                while ((bytesRead = inputStream.read(buf)) > 0) {
+                    byte[] trimmedBuf  = Arrays.copyOf(buf, bytesRead);
+
+                    Chunk chunk = new Chunk(chunkNo, 1, trimmedBuf);
+                    this.chunks.add(chunk);
+                    chunkNo++;
+                }
+
+                if(this.file.length() % maxChunkSize == 0)
+                {
+                    Chunk chunk = new Chunk(chunkNo, 1, null);
+                    this.chunks.add(chunk);
+                }
+
+            }catch(IOException e)
+            {
+                System.err.println("Error reading file");
+                System.exit(-6);
+            }
+
         }
 
         public void run() {
-            if(count == ignore) {
+            getChunks();
+
+            if (count == ignore) {
                 if (peers.get(0).size() < rd) {
                     System.out.println("rd not achieved");
-                    String[] params = new String[]{file, "1", String.valueOf(rd), "CONTENT OF THE FILE"};
+                    String[] params = new String[]{"1", "1", String.valueOf(rd), "CONTENT OF THE FILE"};
                     String message = addHeader("PUTCHUNK", params);
                     sendPacket(mdbSocket, message, mdbAddress, mdbPort);
                     sends++;
@@ -63,10 +99,16 @@ public class Peer {
                         t.cancel();
                     } else {
                         count = 0;
-                        switch(sends){
-                            case 2: ignore = 1; break;
-                            case 3: ignore = 3; break;
-                            case 4: ignore = 7; break;
+                        switch (sends) {
+                            case 2:
+                                ignore = 1;
+                                break;
+                            case 3:
+                                ignore = 3;
+                                break;
+                            case 4:
+                                ignore = 7;
+                                break;
                         }
                     }
                 } else {
@@ -78,13 +120,13 @@ public class Peer {
         }
     }
 
-    private static class Mdb implements Runnable{
+    private static class Mdb implements Runnable {
         @Override
         public void run() {
             String message = getPacketMessage(mdbSocket);
-            if(message != null){
+            if (message != null) {
                 String[] tokens = message.split(" ");
-                if(check(tokens) && tokens[0].equals("PUTCHUNK")) {
+                if (check(tokens) && tokens[0].equals("PUTCHUNK")) {
                     String[] params = new String[]{tokens[3], tokens[4]};
                     message = addHeader("STORED", params);
                     sendPacket(mcSocket, message, mcAddress, mcPort);
@@ -93,22 +135,28 @@ public class Peer {
         }
     }
 
-    private static class Mc implements Runnable{
+    private static class Mc implements Runnable {
         @Override
         public void run() {
             String message;
             message = getPacketMessage(mcSocket);
-            if(message != null) {
+            if (message != null) {
                 String[] tokens = message.split(" ");
                 if (check(tokens) && tokens[0].equals("STORED")) {
                     Request req = requests.get(tokens[3]);
                     req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
+                } else if (check(tokens) && tokens[0].equals("GETCHUNK")) {
+                    if (hasChunk()) {
+                        String[] params = new String[]{tokens[3], tokens[4], "CONTENT OF THE FILE"};
+                        message = addHeader("CHUNK", params);
+                        sendPacket(mdbSocket, message, mdbAddress, mdbPort);
+                    }
                 }
             }
         }
     }
-/*
-    private static class Mdr implements Runnable{
+
+    /*private static class Mdr implements Runnable{
         @Override
         public void run() {
             String message;
@@ -125,41 +173,40 @@ public class Peer {
                 }
             }
         }
-    }
-*/
-    private static String addHeader(String type, String[] params){
-        String message = type + " " + 
-                         version + " " + 
-                         senderId + " " +
-                        params[0];
+    }*/
 
-        for(int i = 1; i < params.length; i++)
-        {
+    private static String addHeader(String type, String[] params) {
+        String message = type + " " +
+                version + " " +
+                senderId + " " +
+                params[0];
+
+        for (int i = 1; i < params.length; i++) {
             message += " " + params[i];
 
-            if(i == params.length - 2)
-                if(type.equals("PUTCHUNK") || type.equals("CHUNK"))
+            if (i == params.length - 2)
+                if (type.equals("PUTCHUNK") || type.equals("CHUNK"))
                     break;
         }
 
         message += " \r\n\r\n";
 
-        if(type.equals("PUTCHUNK") || type.equals("CHUNK"))
-            message += " " + params[params.length-1];
+        if (type.equals("PUTCHUNK") || type.equals("CHUNK"))
+            message += " " + params[params.length - 1];
 
         return message;
     }
 
-    private static boolean check(String[] tokens){
+    private static boolean check(String[] tokens) {
         return Integer.parseInt(tokens[2]) != senderId;
     }
-/*
+
     private static boolean hasChunk() {
         // Checks if peer has desired chunk. 
         return true;
     }
-*/
-    private static String getPacketMessage(MulticastSocket socket){
+
+    private static String getPacketMessage(MulticastSocket socket) {
         try {
             byte[] msg = new byte[256];
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
@@ -168,14 +215,14 @@ public class Peer {
             System.out.println(new String(packet.getData(), 0, packet.getLength()));
             System.out.println("Received packet");
             return new String(packet.getData()).replaceAll("\0", "");
-        } catch(IOException e){
+        } catch (IOException e) {
             System.err.println("Error receiving packet");
             System.exit(-4);
         }
         return null;
     }
 
-    private static void sendPacket(MulticastSocket socket, String message, InetAddress address, int port){
+    private static void sendPacket(MulticastSocket socket, String message, InetAddress address, int port) {
         DatagramPacket packet = new DatagramPacket(message.getBytes(), message.getBytes().length, address, port);
         try {
             socket.send(packet);
@@ -186,26 +233,26 @@ public class Peer {
         }
     }
 
-    private static InetAddress getAddress(String address){
+    private static InetAddress getAddress(String address) {
         try {
             InetAddress add = InetAddress.getByName(address);
             System.out.println("Multicast address created");
             return add;
-        } catch (UnknownHostException e){
+        } catch (UnknownHostException e) {
             System.err.println("Multicast address unknown");
             System.exit(-2);
         }
         return null;
     }
 
-    private static MulticastSocket getMCSocket(InetAddress address, int port){
+    private static MulticastSocket getMCSocket(InetAddress address, int port) {
         try {
             MulticastSocket mcSocket = new MulticastSocket(port);
             mcSocket.joinGroup(address);
             mcSocket.setTimeToLive(1);
             System.out.println("Multicast socket set up successful");
             return mcSocket;
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Error setting up multicast MC socket");
             System.exit(-1);
         }
@@ -215,7 +262,7 @@ public class Peer {
     private static void setupThread(Thread th) {
         try {
             th.join();
-        } catch (InterruptedException e){
+        } catch (InterruptedException e) {
             System.err.println("Error waiting for thread");
             return;
         }
@@ -258,15 +305,15 @@ public class Peer {
 
 //        setupThread(mdr);
 
-        if(senderId == 1){
+        if (senderId == 1) {
             int rd = 1;
-            String file = "files/file";
+            String file_path = "code/example.txt";
 
             //MC.setRD(1);
 
             Timer t = new Timer();
-            Request req = new Request(t, file, rd);
-            requests.put(file, req);
+            Request req = new Request(t, file_path, rd);
+            requests.put(file_path, req);
             t.scheduleAtFixedRate(req, 0, 1000);
         }
     }
