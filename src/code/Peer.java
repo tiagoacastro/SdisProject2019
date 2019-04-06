@@ -22,6 +22,7 @@ public class Peer {
     private static int senderId;
     private static String version;
     private static HashMap<String, Request> requests = new HashMap<>();
+    private static ArrayList<Chunk> storedChunks = new ArrayList<>();
 
 /*    private enum MessageType {
         PUTCHUNK, STORED
@@ -47,10 +48,10 @@ public class Peer {
             int maxChunkSize = 64000, chunkNo = 0, bytesRead;
             byte[] buf = new byte[maxChunkSize];
 
-            BufferedInputStream inputStream = null;
+            FileInputStream inputStream = null;
 
             try {
-                inputStream = new BufferedInputStream(new FileInputStream(file));
+                inputStream = new FileInputStream(file);
             } catch (FileNotFoundException e) {
                 System.err.println("Error opening file");
                 System.exit(-5);
@@ -62,6 +63,7 @@ public class Peer {
 
                     Chunk chunk = new Chunk(chunkNo, "1", trimmedBuf);
                     this.chunks.add(chunk);
+
                     chunkNo++;
                 }
 
@@ -81,23 +83,25 @@ public class Peer {
 
         private void sendChunk(Chunk chunk)
         {
-            int count = 0, ignore = 0, sends = 0;
+            int count = 0, ignore = 0, sends = 0, messageSize;
+            byte [] headerBytes, message;
 
-            String body = new String(chunk.getBody(), StandardCharsets.UTF_8);
+            String[] params = new String[]{String.valueOf(chunk.getFileId()), String.valueOf(chunk.getNumber()), String.valueOf(rd)};
+            String header = addHeader("PUTCHUNK", params);
 
-            while(true) {
-                if (sends == 5) {
-                    System.out.println("too many sends");
-                    break;
-                }
+            headerBytes = header.getBytes();
+            messageSize = headerBytes.length + chunk.getBody().length;
+            message = new byte[messageSize];
 
+            System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
+            System.arraycopy(chunk.getBody(), 0, message, headerBytes.length, chunk.getBody().length);
+
+            while(sends < 5) {
                 if (count == ignore) {
                     int numberPeers = chunks.get(chunk.getNumber()).getPeers().size();
                     if (numberPeers < rd) {
                         System.out.println("rd not achieved");
-                        String[] params = new String[]{String.valueOf(chunk.getFileId()), String.valueOf(chunk.getNumber()), String.valueOf(rd), "ff"};
-                        String message = addHeader("PUTCHUNK", params);
-                        sendPacket(mdbSocket, message, mdbAddress, mdbPort);
+                        sendPacketBytes(mdbSocket, message, mdbAddress, mdbPort);
                         sends++;
                         count = 0;
                         switch (sends) {
@@ -125,6 +129,9 @@ public class Peer {
                     System.exit(-1);
                 }
             }
+
+            if(sends == 5)
+                System.out.println("Too many sends");
         }
 
         public void run() {
@@ -148,27 +155,23 @@ public class Peer {
                 if (message != null) {
                     String[] tokens = message.split(" ");
                     if (check(tokens) && tokens[0].equals("PUTCHUNK")) {
+                        String chunkBody = "";
 
-                        FileOutputStream out = null;
-                        try {
-                            out = new FileOutputStream("code/test.txt");
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
+                        for(int i = 7; i < tokens.length; i++)
+                        {
+                            chunkBody += tokens[i];
                         }
-                        try {
-                            for (int i = 7; i < tokens.length; i++)
-                                out.write(tokens[i].getBytes());
 
-                            out.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        Chunk c = new Chunk(Integer.parseInt(tokens[4]), tokens[3], chunkBody.getBytes());
+                        storedChunks.add(c);
 
                         String[] params = new String[]{tokens[3], tokens[4]};
                         message = addHeader("STORED", params);
                         sendPacket(mcSocket, message, mcAddress, mcPort);
                     }
                 }
+
+
             }
         }
     }
@@ -272,6 +275,16 @@ public class Peer {
         }
     }
 
+    private static void sendPacketBytes(MulticastSocket socket, byte[] message, InetAddress address, int port) {
+        DatagramPacket packet = new DatagramPacket(message, message.length, address, port);
+        try {
+            socket.send(packet);
+            System.out.println("Multicast packet sent");
+        } catch (IOException e) {
+            System.err.println("Multicast packet send failed");
+            System.exit(-3);
+        }
+    }
     private static InetAddress getAddress(String address) {
         try {
             InetAddress add = InetAddress.getByName(address);
