@@ -31,22 +31,16 @@ public class Peer {
         private Timer t;
         private File file;
         private int rd;
-        private int sends = 0;
-        private int ignore = 0;
-        private int count = 0;
-        private ArrayList<ArrayList<Integer>> peers = new ArrayList<>();
         private ArrayList<Chunk> chunks = new ArrayList<>();
 
         Request(Timer t, String fp, int rd) {
             this.file = new File(fp);
             this.rd = rd;
             this.t = t;
-            peers.add(new ArrayList<>());
         }
 
         public void store(int chunkNo, int senderId) {
-            rd--;
-            peers.get(chunkNo).add(senderId);
+            chunks.get(chunkNo).addPeer(senderId);
         }
 
         private void getChunks() {
@@ -87,37 +81,37 @@ public class Peer {
 
         private void sendChunk(Chunk chunk)
         {
+            int count = 0, ignore = 0, sends = 0;
+
             String body = new String(chunk.getBody(), StandardCharsets.UTF_8);
 
-            count = 0;
-            ignore = 0;
-            sends = 0;
-
             while(true) {
+                if (sends == 5) {
+                    System.out.println("too many sends");
+                    break;
+                }
+
                 if (count == ignore) {
-                    if (peers.get(0).size() < rd) {
+                    int numberPeers = chunks.get(chunk.getNumber()).getPeers().size();
+                    if (numberPeers < rd) {
                         System.out.println("rd not achieved");
-                        String[] params = new String[]{String.valueOf(chunk.getFileId()), String.valueOf(chunk.getNumber()), String.valueOf(rd), chunk.getBody()};
+                        String[] params = new String[]{String.valueOf(chunk.getFileId()), String.valueOf(chunk.getNumber()), String.valueOf(rd), "ff"};
                         String message = addHeader("PUTCHUNK", params);
                         sendPacket(mdbSocket, message, mdbAddress, mdbPort);
                         sends++;
-                        if (this.sends == 5) {
-                            System.out.println("too many sends");
-                            break;
-                        } else {
-                            count = 0;
-                            switch (sends) {
-                                case 2:
-                                    ignore = 1;
-                                    break;
-                                case 3:
-                                    ignore = 3;
-                                    break;
-                                case 4:
-                                    ignore = 7;
-                                    break;
-                            }
+                        count = 0;
+                        switch (sends) {
+                           case 2:
+                               ignore = 1;
+                               break;
+                           case 3:
+                               ignore = 3;
+                               break;
+                           case 4:
+                               ignore = 7;
+                               break;
                         }
+
                     } else {
                         System.out.println("rd achieved");
                         break;
@@ -149,29 +143,31 @@ public class Peer {
     private static class Mdb implements Runnable {
         @Override
         public void run() {
-            String message = getPacketMessage(mdbSocket);
-            if (message != null) {
-                String[] tokens = message.split(" ");
-                if (check(tokens) && tokens[0].equals("PUTCHUNK")) {
+            while(true) {
+                String message = getPacketMessage(mdbSocket);
+                if (message != null) {
+                    String[] tokens = message.split(" ");
+                    if (check(tokens) && tokens[0].equals("PUTCHUNK")) {
 
-                    FileOutputStream out = null;
-                    try {
-                        out = new FileOutputStream("code/test.txt");
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                        FileOutputStream out = null;
+                        try {
+                            out = new FileOutputStream("code/test.txt");
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            for (int i = 7; i < tokens.length; i++)
+                                out.write(tokens[i].getBytes());
+
+                            out.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        String[] params = new String[]{tokens[3], tokens[4]};
+                        message = addHeader("STORED", params);
+                        sendPacket(mcSocket, message, mcAddress, mcPort);
                     }
-                    try {
-                        for(int i = 7; i < tokens.length; i++)
-                            out.write(tokens[i].getBytes());
-
-                        out.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    String[] params = new String[]{tokens[3], tokens[4]};
-                    message = addHeader("STORED", params);
-                    sendPacket(mcSocket, message, mcAddress, mcPort);
                 }
             }
         }
@@ -180,20 +176,20 @@ public class Peer {
     private static class Mc implements Runnable {
         @Override
         public void run() {
-            String message;
-            message = getPacketMessage(mcSocket);
-            if (message != null) {
-                String[] tokens = message.split(" ");
-                if (check(tokens) && tokens[0].equals("STORED")) {
-                    Request req = requests.get(tokens[3]);
-                    req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
-                }
-
-                else if (check(tokens) && tokens[0].equals("GETCHUNK")) {
-                    if (hasChunk()) {
-                        String[] params = new String[]{tokens[3], tokens[4], "CONTENT OF THE FILE"};
-                        message = addHeader("CHUNK", params);
-                        sendPacket(mdbSocket, message, mdbAddress, mdbPort);
+            while(true) {
+                String message;
+                message = getPacketMessage(mcSocket);
+                if (message != null) {
+                    String[] tokens = message.split(" ");
+                    if (check(tokens) && tokens[0].equals("STORED")) {
+                        Request req = requests.get(tokens[3]);
+                        req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
+                    } else if (check(tokens) && tokens[0].equals("GETCHUNK")) {
+                        if (hasChunk()) {
+                            String[] params = new String[]{tokens[3], tokens[4], "CONTENT OF THE FILE"};
+                            message = addHeader("CHUNK", params);
+                            sendPacket(mdbSocket, message, mdbAddress, mdbPort);
+                        }
                     }
                 }
             }
@@ -350,7 +346,7 @@ public class Peer {
 
         if (senderId == 1) {
             int rd = 1;
-            String file_path = "code/example.txt";
+            String file_path = "code/image.jpg";
 
             //MC.setRD(1);
 
