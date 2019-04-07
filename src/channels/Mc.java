@@ -1,7 +1,7 @@
 package channels;
 
 import code.Peer;
-import code.Request;
+import code.StoreRequest;
 
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -25,7 +25,7 @@ public class Mc extends Channel{
             if (message != null) {
                 String[] tokens = message.split(" ");
                 if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("STORED")) {
-                    Request req = Peer.requests.get(tokens[3]);
+                    StoreRequest req = Peer.requests.get(tokens[3]);
                     req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
                 }
             }

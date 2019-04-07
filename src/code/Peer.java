@@ -9,7 +9,7 @@ import java.util.*;
 public class Peer {
     static String version;
     public static int senderId;
-    public static HashMap<String, Request> requests = new HashMap<>();
+    public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static ArrayList<Chunk> storedChunks = new ArrayList<>();
 
     private static void setupThread(Thread th) {
@@ -46,7 +46,7 @@ public class Peer {
             String file_path = "image.jpg";
 
             Timer t = new Timer();
-            Request req = new Request(t, file_path, rd);
+            StoreRequest req = new StoreRequest(t, file_path, rd);
             requests.put("1", req);
             t.scheduleAtFixedRate(req, 0, 1000);
         }

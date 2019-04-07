@@ -12,13 +12,13 @@ import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class Request extends TimerTask {
+public class StoreRequest extends TimerTask {
     private Timer t;
     private File file;
     private int rd;
     private ArrayList<Chunk> chunks = new ArrayList<>();
 
-    Request(Timer t, String fp, int rd) {
+    StoreRequest(Timer t, String fp, int rd) {
         this.file = new File(fp);
         this.rd = rd;
         this.t = t;
