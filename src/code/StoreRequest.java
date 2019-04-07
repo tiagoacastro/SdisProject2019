@@ -16,12 +16,18 @@ public class StoreRequest extends TimerTask {
     private Timer t;
     private File file;
     private int rd;
+    private int chunk = 0;
+    private int count = 0;
+    private int ignore = 0;
+    private int sends = 0;
     private ArrayList<Chunk> chunks = new ArrayList<>();
 
     StoreRequest(Timer t, String fp, int rd) {
         this.file = new File(fp);
         this.rd = rd;
         this.t = t;
+
+        getChunks();
     }
 
     public void store(int chunkNo, int senderId) {
@@ -67,66 +73,52 @@ public class StoreRequest extends TimerTask {
 
     private void sendChunk(Chunk chunk)
     {
-        int count = 0, ignore = 0, sends = 0, messageSize;
+        int messageSize;
         byte [] headerBytes, message;
 
-        String[] params = new String[]{String.valueOf(chunk.getFileId()), String.valueOf(chunk.getNumber()), String.valueOf(rd)};
-        String header = MessageFactory.addHeader("PUTCHUNK", params);
+        if (chunks.get(this.chunk).getPeers().size() < rd) {
+            System.out.println("rd not achieved");
 
-        headerBytes = header.getBytes();
-        messageSize = headerBytes.length + chunk.getBody().length;
-        message = new byte[messageSize];
+            String[] params = new String[]{String.valueOf(chunk.getFileId()), String.valueOf(chunk.getNumber()), String.valueOf(rd)};
+            String header = MessageFactory.addHeader("PUTCHUNK", params);
+            headerBytes = header.getBytes();
+            messageSize = headerBytes.length + chunk.getBody().length;
+            message = new byte[messageSize];
+            System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
+            System.arraycopy(chunk.getBody(), 0, message, headerBytes.length, chunk.getBody().length);
 
-        System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
-        System.arraycopy(chunk.getBody(), 0, message, headerBytes.length, chunk.getBody().length);
-
-        while(sends < 5) {
-            if (count == ignore) {
-                int numberPeers = chunks.get(chunk.getNumber()).getPeers().size();
-                if (numberPeers < rd) {
-                    System.out.println("rd not achieved");
-                    Channel.sendPacketBytes(Mdb.socket, message, Mdb.address, Mdb.port);
-                    sends++;
-                    count = 0;
-                    switch (sends) {
-                        case 2:
-                            ignore = 1;
-                            break;
-                        case 3:
-                            ignore = 3;
-                            break;
-                        case 4:
-                            ignore = 7;
-                            break;
-                    }
-
-                } else {
-                    System.out.println("rd achieved");
-                    break;
+            Channel.sendPacketBytes(Mdb.socket, message, Mdb.address, Mdb.port);
+            sends++;
+            if(sends == 5){
+                System.out.println("too many sends");
+                t.cancel();
+            } else {
+                count = 0;
+                switch (sends) {
+                    case 2: ignore = 1; break;
+                    case 3: ignore = 3; break;
+                    case 4: ignore = 7; break;
                 }
-            } else
-                count++;
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                System.exit(-1);
             }
+        } else {
+            System.out.println("rd achieved");
+            this.chunk++;
+            ignore = 0;
+            count = 0;
+            sends = 0;
         }
-
-        if(sends == 5)
-            System.out.println("Too many sends");
     }
 
+    @Override
     public void run() {
-        getChunks();
+        if(chunk == chunks.size())
+            t.cancel();
 
-        for(Chunk c: this.chunks)
-        {
+        if (count == ignore) {
+            Chunk c = chunks.get(chunk);
             System.out.println("Sending chunk #" + c.getNumber());
             sendChunk(c);
-        }
-
-        t.cancel();
+        } else
+            count++;
     }
 }
