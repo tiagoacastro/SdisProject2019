@@ -33,7 +33,7 @@ public abstract class Channel implements Runnable{
 
     static String getPacketMessage(MulticastSocket socket) {
         try {
-            byte[] msg = new byte[256];
+            byte[] msg = new byte[65000];
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             socket.receive(packet);
             System.out.println("Received packet");

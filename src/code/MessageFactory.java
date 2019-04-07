@@ -5,20 +5,13 @@ public class MessageFactory {
         String message = type + " " +
                 Peer.version + " " +
                 Peer.senderId + " " +
-                params[0];
+                params[0] + " ";
 
         for (int i = 1; i < params.length; i++) {
-            message += " " + params[i];
-
-            if (i == params.length - 2)
-                if (type.equals("PUTCHUNK") || type.equals("CHUNK"))
-                    break;
+                message += params[i] + " ";
         }
 
-        message += " \r\n\r\n";
-
-        if (type.equals("PUTCHUNK") || type.equals("CHUNK"))
-            message += " " + params[params.length - 1];
+        message += "\r\n\r\n ";
 
         return message;
     }

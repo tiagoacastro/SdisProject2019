@@ -46,7 +46,7 @@ public class Peer {
 
         if (senderId == 1) {
             int rd = 1;
-            String file_path = "image.jpg";
+            String file_path = "example.txt";
 
             StoreRequest req = new StoreRequest(executor, file_path, rd);
             requests.put("1", req);
