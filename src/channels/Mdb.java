@@ -25,16 +25,6 @@ public class Mdb extends Channel{
             if (message != null) {
                 String[] tokens = message.split(" ");
                 if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
-                    String chunkBody = "";
-
-                    for(int i = 7; i < tokens.length; i++)
-                    {
-                        chunkBody += tokens[i];
-                    }
-
-                    Chunk c = new Chunk(Integer.parseInt(tokens[4]), tokens[3], chunkBody.getBytes());
-                    Peer.storedChunks.add(c);
-
                     String[] params = new String[]{tokens[3], tokens[4]};
                     message = MessageFactory.addHeader("STORED", params);
                     sendPacket(Mc.socket, message, Mc.address, Mc.port);

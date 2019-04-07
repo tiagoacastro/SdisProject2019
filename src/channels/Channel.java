@@ -10,7 +10,6 @@ public abstract class Channel implements Runnable{
     static InetAddress getAddress(String address) {
         try {
             InetAddress add = InetAddress.getByName(address);
-            System.out.println("Multicast address created");
             return add;
         } catch (UnknownHostException e) {
             System.err.println("Multicast address unknown");
@@ -24,7 +23,6 @@ public abstract class Channel implements Runnable{
             MulticastSocket mcSocket = new MulticastSocket(port);
             mcSocket.joinGroup(address);
             mcSocket.setTimeToLive(1);
-            System.out.println("Multicast socket set up successful");
             return mcSocket;
         } catch (IOException e) {
             System.err.println("Error setting up multicast MC socket");
@@ -37,7 +35,6 @@ public abstract class Channel implements Runnable{
         try {
             byte[] msg = new byte[256];
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
-            System.out.println("wait");
             socket.receive(packet);
             System.out.println("Received packet");
             return new String(packet.getData()).replaceAll("\0", "");
@@ -61,9 +58,9 @@ public abstract class Channel implements Runnable{
     private static void auxiliar(MulticastSocket socket, DatagramPacket packet) {
         try {
             socket.send(packet);
-            System.out.println("Multicast packet sent");
+            System.out.println("Packet sent");
         } catch (IOException e) {
-            System.err.println("Multicast packet send failed");
+            System.err.println("Packet send failed");
             System.exit(-3);
         }
     }

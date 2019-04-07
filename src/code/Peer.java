@@ -1,16 +1,17 @@
 package code;
 
-
 import channels.Mc;
 import channels.Mdb;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Peer {
     static String version;
     public static int senderId;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
-    public static ArrayList<Chunk> storedChunks = new ArrayList<>();
 
     private static void setupThread(Thread th) {
         try {
@@ -41,16 +42,23 @@ public class Peer {
         setupThread(mdb);
         setupThread(mc);
 
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(20);
+
         if (senderId == 1) {
             int rd = 1;
             String file_path = "image.jpg";
 
-            Timer t = new Timer();
-            StoreRequest req = new StoreRequest(t, file_path, rd);
+            StoreRequest req = new StoreRequest(executor, file_path, rd);
             requests.put("1", req);
-            t.scheduleAtFixedRate(req, 0, 1000);
-        }
+            executor.schedule(req, 0, TimeUnit.SECONDS);
 
+            try {
+                executor.awaitTermination(1, TimeUnit.DAYS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            executor.shutdown();
+        }
     }
 }
 
