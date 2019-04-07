@@ -43,7 +43,7 @@ public class Peer {
 
         if (senderId == 1) {
             int rd = 1;
-            String file_path = "code/image.jpg";
+            String file_path = "image.jpg";
 
             Timer t = new Timer();
             Request req = new Request(t, file_path, rd);
