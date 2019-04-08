@@ -36,11 +36,17 @@ public class Chunk implements Runnable{
         byte [] headerBytes, message;
 
         if (peers.size() < rd) {
+
+            String header;
+            String [] params;
+
             System.out.println("send " + sends + " of #" + chunkNo);
-            String[] params = new String[]{String.valueOf(fileId), String.valueOf(chunkNo), String.valueOf(rd)};
-            String header = MessageFactory.addHeader("PUTCHUNK", params);
+            params = new String[]{String.valueOf(fileId), String.valueOf(chunkNo), String.valueOf(rd)};
+            header = MessageFactory.addHeader("PUTCHUNK", params);
+
             headerBytes = header.getBytes();
             messageSize = headerBytes.length + body.length;
+
             message = new byte[messageSize];
             System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
             System.arraycopy(body, 0, message, headerBytes.length, body.length);

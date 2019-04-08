@@ -33,7 +33,7 @@ public class Mc extends Channel{
 
                 else if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("DELETE")) {
 
-                    File directory = new File("file_" + tokens[3]);// + msg[3]);
+                    File directory = new File("file_" + tokens[3]);
 
                     if (directory.exists()) {
                         String[] files = directory.list();

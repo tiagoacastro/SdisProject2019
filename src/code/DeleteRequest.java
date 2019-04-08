@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
 public class DeleteRequest extends TimerTask {
 
     private ScheduledExecutorService executor;
-    private String file_path;
+    private String file_id;
 
-    DeleteRequest(ScheduledExecutorService executor, String fp) {
+    DeleteRequest(ScheduledExecutorService executor, String fid) {
         this.executor = executor;
-        this.file_path =  fp;
+        this.file_id =  fid;
 
         executor.schedule(this, 0, TimeUnit.SECONDS);
     }
@@ -22,11 +22,8 @@ public class DeleteRequest extends TimerTask {
     @Override
     public void run() {
 
-        //TODO Determinar file_id de acordo com  file_path
-        String[] params = new String[]{"1"};  //hardcoded
+        String[] params = new String[]{this.file_id};
         String message = MessageFactory.addHeader("DELETE", params);
         Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
-
-
     }
 }
