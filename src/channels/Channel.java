@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public abstract class Channel implements Runnable{
     static InetAddress getAddress(String address) {
@@ -31,18 +32,34 @@ public abstract class Channel implements Runnable{
         return null;
     }
 
-    static String getPacketMessage(MulticastSocket socket) {
+    static byte[] getPacketMessage(MulticastSocket socket) {
         try {
             byte[] msg = new byte[65000];
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             socket.receive(packet);
             System.out.println("Received packet");
-            return new String(packet.getData()).replaceAll("\0", "");
+            trimMessage(msg);
+            return trimMessage(msg);
         } catch (IOException e) {
             System.err.println("Error receiving packet");
             System.exit(-4);
         }
         return null;
+    }
+
+    static byte[] trimMessage(byte []msg) {
+
+        int paddingZeros = 0, index = 64999;
+        while(true)
+        {
+            if(msg[index] != 0)
+                break;
+
+            paddingZeros++;
+            index--;
+        }
+
+        return Arrays.copyOf(msg, msg.length - paddingZeros);
     }
 
     static void sendPacket(MulticastSocket socket, String message, InetAddress address, int port) {

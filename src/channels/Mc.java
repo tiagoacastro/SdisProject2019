@@ -20,8 +20,9 @@ public class Mc extends Channel{
     @Override
     public void run() {
         while(true) {
-            String message;
-            message = getPacketMessage(socket);
+            byte[] msg = getPacketMessage(socket);;
+            String message = new String(msg).replaceAll("\0", "");
+            
             if (message != null) {
                 String[] tokens = message.split(" ");
                 if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("STORED")) {

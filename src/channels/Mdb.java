@@ -22,34 +22,48 @@ public class Mdb extends Channel{
         Mdb.socket = getMCSocket(address, port);
     }
 
+    private void createChunk(byte[] msg, String fileId, String chunkNo)
+    {
+        FileOutputStream out = null;
+
+        File directory = new File("file_" + fileId);// + msg[3]);
+        if (! directory.exists())
+            directory.mkdir();
+
+        try {
+            out = new FileOutputStream("file_" + fileId + "/chunk_" + chunkNo);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            int count = 0;
+
+            for(int i = 0; i < msg.length - 1; i++) {
+
+                if(count >= 2)
+                    out.write((char) msg[i]);
+
+                else if(msg[i] == 10)
+                    count++;
+            }
+
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void run() {
         while(true) {
-            String message = getPacketMessage(socket);
+            byte[] msg = getPacketMessage(socket);;
+            String message = new String(msg).replaceAll("\0", "");
+
             if (message != null) {
                 String[] tokens = message.split(" ");
                 if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
 
-                    FileOutputStream out = null;
-
-                    File directory = new File("file_" + tokens[3]);
-                    if (! directory.exists())
-                        directory.mkdir();
-
-                    try {
-                        out = new FileOutputStream("file_" + tokens[3] + "/" + tokens[4]);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        for(int i = 7; i < tokens.length; i++) {
-                            out.write((tokens[i] + " ").getBytes());
-                        }
-
-                        out.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    createChunk(msg, tokens[3], tokens[4]);
 
                     String[] params = new String[]{tokens[3], tokens[4]};
                     message = MessageFactory.addHeader("STORED", params);

@@ -11,7 +11,7 @@ public class MessageFactory {
                 message += params[i] + " ";
         }
 
-        message += "\r\n\r\n ";
+        message += "\r\n\r\n";
 
         return message;
     }
