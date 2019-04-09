@@ -42,22 +42,20 @@ public class Peer {
         setupThread(mdb);
         setupThread(mc);
 
-        //backedFiles.put("image2.jpg","3");
-
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(20);
 
         if (senderId == 1) {
-            /*int rd = 1;
+            int rd = 1;
             String file_path = "image2.jpg";
 
             StoreRequest req = new StoreRequest(executor, file_path, rd);
             requests.put("1", req);
-            executor.schedule(req, 0, TimeUnit.SECONDS);*/
+            executor.schedule(req, 0, TimeUnit.SECONDS);
 
-            String file_path = "image2.jpg";
+            /*String file_path = "image2.jpg";
 
             DeleteRequest req = new DeleteRequest(executor, "3");
-            executor.schedule(req, 0, TimeUnit.SECONDS);
+            executor.schedule(req, 0, TimeUnit.SECONDS);*/
 
             try {
                 executor.awaitTermination(1, TimeUnit.DAYS);
