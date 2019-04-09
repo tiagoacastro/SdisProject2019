@@ -37,7 +37,6 @@ public abstract class Channel implements Runnable{
             byte[] msg = new byte[65000];
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             socket.receive(packet);
-            System.out.println("Received packet");
             trimMessage(msg);
             return trimMessage(msg);
         } catch (IOException e) {
@@ -75,7 +74,6 @@ public abstract class Channel implements Runnable{
     private static void auxiliar(MulticastSocket socket, DatagramPacket packet) {
         try {
             socket.send(packet);
-            System.out.println("Packet sent");
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);

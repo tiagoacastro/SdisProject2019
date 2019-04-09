@@ -13,17 +13,7 @@ public class Peer {
     public static int senderId;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
 
-    private static void setupThread(Thread th) {
-        try {
-            th.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
-        th.start();
-    }
-
-    public static void main(String[] args) {
+    Peer(String[] args) {
         if(args.length != 6)
             return;
 
@@ -63,6 +53,16 @@ public class Peer {
             }
             executor.shutdown();
         }
+    }
+
+    private static void setupThread(Thread th) {
+        try {
+            th.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+        th.start();
     }
 }
 
