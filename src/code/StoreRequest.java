@@ -1,29 +1,28 @@
 package code;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.TimerTask;
+import java.util.HashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class StoreRequest extends TimerTask {
-    private ScheduledExecutorService executor;
+public class StoreRequest implements Runnable, Serializable {
+    transient private ScheduledExecutorService executor;
     private File file;
     private String fileId;
     private int rd;
     private ArrayList<Chunk> chunks = new ArrayList<>();
+    private HashMap<String, StoreRequest> requests;
 
-    StoreRequest(ScheduledExecutorService executor, String fp, int rd) {
+    StoreRequest(HashMap<String, StoreRequest> requests, ScheduledExecutorService executor, String fp, int rd) {
         this.executor = executor;
         this.rd = rd;
         this.file = new File(fp);
+        this.requests = requests;
 
         encodeFileId();
 
@@ -38,22 +37,22 @@ public class StoreRequest extends TimerTask {
     {
         String originalString = null;
         MessageDigest md = null;
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         try {
             originalString = this.file.getName() + "_" +
                              this.file.lastModified() + "_" +
                              Files.getOwner(this.file.toPath());
         } catch (IOException e) {
-            System.err.println("Error retrieving file information");
+            e.printStackTrace();
             System.exit(-1);
         }
 
         try {
             md = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            System.err.println("Error getting instance of MessageDigest");
-            System.exit(-2);
+            e.printStackTrace();
+            System.exit(-1);
         }
 
         md.update(originalString.getBytes());
@@ -62,7 +61,7 @@ public class StoreRequest extends TimerTask {
             result.append(Integer.toString((byt & 0xff) + 0x100, 16).substring(1));
 
         this.fileId = result.toString();
-        Peer.requests.put(this.fileId, this);
+        requests.put(this.fileId, this);
     }
 
     private void getChunks() {

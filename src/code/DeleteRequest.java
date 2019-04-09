@@ -8,11 +8,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.TimerTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class DeleteRequest extends TimerTask {
+public class DeleteRequest implements Runnable {
     private File file;
     private ScheduledExecutorService executor;
     private String fileId;
@@ -28,7 +27,7 @@ public class DeleteRequest extends TimerTask {
     {
         String originalString = null;
         MessageDigest md = null;
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         try {
             originalString = this.file.getName() + "_" +

@@ -27,12 +27,14 @@ public class Mdb extends Channel{
         FileOutputStream out = null;
 
         File directoryFiles = new File("Files");
-        if (! directoryFiles.exists())
-            directoryFiles.mkdir();
+        if (!directoryFiles.exists())
+            if(!directoryFiles.mkdir())
+                return;
 
         File directory = new File("Files/" + fileId);
-        if (! directory.exists())
-            directory.mkdir();
+        if (!directory.exists())
+            if(!directory.mkdir())
+                return;
 
         try {
             out = new FileOutputStream("Files/" + fileId + "/" + chunkNo);
@@ -61,28 +63,30 @@ public class Mdb extends Channel{
     @Override
     public void run() {
         while(true) {
-            byte[] msg = getPacketMessage(socket);;
-            String message = new String(msg).replaceAll("\0", "");
+            byte[] msg = getPacketMessage(socket);
+            if(msg != null) {
+                String message = new String(msg).replaceAll("\0", "");
 
-            if (message != null) {
-                String[] tokens = message.split(" ");
-                if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
+                if (message != null) {
+                    String[] tokens = message.split(" ");
+                    if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
 
-                    createChunk(msg, tokens[3], tokens[4]);
+                        createChunk(msg, tokens[3], tokens[4]);
 
-                    String[] params = new String[]{tokens[3], tokens[4]};
-                    message = MessageFactory.addHeader("STORED", params);
+                        String[] params = new String[]{tokens[3], tokens[4]};
+                        message = MessageFactory.addHeader("STORED", params);
 
-                    Random rand = new Random();
-                    int interval = rand.nextInt(401);
-                    try {
-                        Thread.sleep(interval);
-                    } catch(InterruptedException e) {
-                        e.printStackTrace();
-                        System.exit(-1);
+                        Random rand = new Random();
+                        int interval = rand.nextInt(401);
+                        try {
+                            Thread.sleep(interval);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            System.exit(-1);
+                        }
+
+                        sendPacket(Mc.socket, message, Mc.address, Mc.port);
                     }
-
-                    sendPacket(Mc.socket, message, Mc.address, Mc.port);
                 }
             }
         }

@@ -10,8 +10,7 @@ import java.util.Arrays;
 public abstract class Channel implements Runnable{
     static InetAddress getAddress(String address) {
         try {
-            InetAddress add = InetAddress.getByName(address);
-            return add;
+            return InetAddress.getByName(address);
         } catch (UnknownHostException e) {
             e.printStackTrace();
             System.exit(-1);
@@ -37,7 +36,6 @@ public abstract class Channel implements Runnable{
             byte[] msg = new byte[65000];
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             socket.receive(packet);
-            trimMessage(msg);
             return trimMessage(msg);
         } catch (IOException e) {
             e.printStackTrace();
@@ -46,8 +44,7 @@ public abstract class Channel implements Runnable{
         return null;
     }
 
-    static byte[] trimMessage(byte []msg) {
-
+    private static byte[] trimMessage(byte []msg) {
         int paddingZeros = 0, index = 64999;
         while(true)
         {

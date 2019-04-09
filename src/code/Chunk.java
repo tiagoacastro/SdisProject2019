@@ -3,15 +3,16 @@ package code;
 import channels.Channel;
 import channels.Mdb;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Chunk implements Runnable{
-    private ScheduledExecutorService executor;
+public class Chunk implements Runnable, Serializable{
+    transient private ScheduledExecutorService executor;
     private int chunkNo;
     private String  fileId;
-    private byte [] body;
+    private byte[] body;
     private ArrayList<Integer> peers;
     private int rd;
     private int sends = 0;

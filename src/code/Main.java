@@ -1,7 +1,6 @@
 package code;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
 public class Main {
     private static Peer peer;
@@ -10,18 +9,43 @@ public class Main {
         @Override
         public void run() {
             System.out.println("hey");
-            /*try {
-                ObjectOutputStream out = new ObjectOutputStream(System.out);
+            File directoryPeers = new File("Peers");
+            if (!directoryPeers.exists())
+                if(!directoryPeers.mkdir())
+                    return;
+
+            try {
+                FileOutputStream fs = new FileOutputStream("Peers/" + Peer.senderId);
+                ObjectOutputStream out = new ObjectOutputStream(fs);
                 out.writeObject(peer);
                 out.close();
+                fs.close();
             } catch (IOException e) {
                 e.printStackTrace();
-            }*/
+            }
         }
     }
 
     public static void main(String[] args) {
+        int senderId = Integer.parseInt(args[1]);
+
+        String path = "Peers/" + senderId;
+        File f = new File(path);
+        if(f.exists() && !f.isDirectory()) {
+            try {
+                FileInputStream fs = new FileInputStream(path);
+                ObjectInputStream in = new ObjectInputStream(fs);
+                peer = (Peer)in.readObject();
+                in.close();
+                fs.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(-1);
+            }
+        } else
+            peer = new Peer();
+
         Runtime.getRuntime().addShutdownHook(new Hook());
-        peer = new Peer(args);
+        peer.start(args);
     }
 }

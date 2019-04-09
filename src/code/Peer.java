@@ -3,17 +3,18 @@ package code;
 import channels.Mc;
 import channels.Mdb;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Peer {
-    static String version;
+public class Peer implements Serializable{
+    public static String version;
     public static int senderId;
-    public static HashMap<String, StoreRequest> requests = new HashMap<>();
+    private HashMap<String, StoreRequest> requests = new HashMap<>();
 
-    Peer(String[] args) {
+    void start(String[] args) {
         if(args.length != 6)
             return;
 
@@ -27,7 +28,7 @@ public class Peer {
         int mcPort = Integer.parseInt(args[5]);
 
         Thread mdb = new Thread(new Mdb(mdbAddr, mdbPort));
-        Thread mc = new Thread(new Mc(mcAddr, mcPort));
+        Thread mc = new Thread(new Mc(requests, mcAddr, mcPort));
 
         setupThread(mdb);
         setupThread(mc);
@@ -38,7 +39,7 @@ public class Peer {
             int rd = 1;
             String file_path = "rsc/image2.jpg";
 
-            StoreRequest req = new StoreRequest(executor, file_path, rd);
+            StoreRequest req = new StoreRequest(requests, executor, file_path, rd);
             requests.put("1", req);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
