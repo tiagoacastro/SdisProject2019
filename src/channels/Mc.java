@@ -1,11 +1,16 @@
 package channels;
 
+import code.MessageFactory;
 import code.Peer;
 import code.StoreRequest;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Mc extends Channel{
@@ -19,6 +24,35 @@ public class Mc extends Channel{
         Mc.port = port;
         Mc.socket = getMCSocket(address, port);
         Mc.requests= requests;
+    }
+
+    private byte[] retrieveChunk(String fileId, String chunkNo)
+    {
+        int bytesRead;
+        byte[] buf = new byte[65000], trimmedBuf = new byte[65000];
+
+        File file = new File("Files/" + fileId + "/" + chunkNo);
+        FileInputStream inputStream = null;
+
+        if(!file.isFile())
+            return null;
+
+        try {
+            inputStream = new FileInputStream("Files/" + fileId + "/" + chunkNo);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            while ((bytesRead = inputStream.read(buf)) > 0) {
+                trimmedBuf = Arrays.copyOf(buf, bytesRead);
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
+        return trimmedBuf;
     }
 
     @Override
@@ -54,6 +88,28 @@ public class Mc extends Channel{
                                         e.printStackTrace();
                                         System.exit(-1);
                                     }
+                                }
+                                break;
+                            case "GETCHUNK":
+                                System.out.println("Recebeu mensagem2");
+                                String header;
+                                int messageSize;
+                                byte [] headerBytes, getChunkMessage, body;
+
+                                if((body = retrieveChunk(tokens[3], tokens[4])) != null)
+                                {
+                                    System.out.println("Tem chunk");
+                                    String[] params = new String[]{tokens[3], tokens[4]};
+                                    header = MessageFactory.addHeader("CHUNK", params);
+                                    headerBytes = header.getBytes();
+                                    messageSize = headerBytes.length + body.length;
+
+                                    getChunkMessage = new byte[messageSize];
+                                    System.arraycopy(headerBytes, 0, getChunkMessage, 0, headerBytes.length);
+                                    System.arraycopy(body, 0, getChunkMessage, headerBytes.length, body.length);
+
+                                    System.out.println("Enviado chunk");
+                                    Channel.sendPacketBytes(Mdr.socket, getChunkMessage, Mdr.address, Mdr.port);
                                 }
                                 break;
                         }
