@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -17,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 public class StoreRequest extends TimerTask {
     private ScheduledExecutorService executor;
     private File file;
-    private String file_path;
     private String fileId;
     private int rd;
     private ArrayList<Chunk> chunks = new ArrayList<>();
@@ -25,7 +23,6 @@ public class StoreRequest extends TimerTask {
     StoreRequest(ScheduledExecutorService executor, String fp, int rd) {
         this.executor = executor;
         this.rd = rd;
-        this.file_path = fp;
         this.file = new File(fp);
 
         encodeFileId();
@@ -72,7 +69,6 @@ public class StoreRequest extends TimerTask {
         int maxChunkSize = 64000, chunkNo = 0, bytesRead;
         byte[] buf = new byte[maxChunkSize];
 
-        File file = new File(this.file_path);
         FileInputStream inputStream = null;
 
         try {
