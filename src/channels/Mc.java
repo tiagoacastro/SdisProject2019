@@ -26,26 +26,26 @@ public class Mc extends Channel{
 
             if (message != null) {
                 String[] tokens = message.split(" ");
-                if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("STORED")) {
-                    StoreRequest req = Peer.requests.get(tokens[3]);
-                    req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
-                }
+                if (Integer.parseInt(tokens[2]) != Peer.senderId)
+                    switch(tokens[0]){
+                        case "STORED":
+                            StoreRequest req = Peer.requests.get(tokens[3]);
+                            req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
+                            break;
+                        case "DELETE":
+                            File directory = new File("file_" + tokens[3]);
+                            if (directory.exists()) {
+                                String[] files = directory.list();
 
-                else if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("DELETE")) {
+                                for(String s: files) {
+                                    File currentFile = new File(directory.getPath(), s);
+                                    currentFile.delete();
+                                }
 
-                    File directory = new File("file_" + tokens[3]);
-
-                    if (directory.exists()) {
-                        String[] files = directory.list();
-
-                        for(String s: files) {
-                            File currentFile = new File(directory.getPath(), s);
-                            currentFile.delete();
-                        }
-
-                        directory.delete();
+                                directory.delete();
+                            }
+                            break;
                     }
-                }
             }
         }
     }

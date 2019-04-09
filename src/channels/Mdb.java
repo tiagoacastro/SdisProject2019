@@ -1,6 +1,5 @@
 package channels;
 
-import code.Chunk;
 import code.MessageFactory;
 import code.Peer;
 
@@ -10,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Random;
 
 public class Mdb extends Channel{
     public static InetAddress address;
@@ -34,12 +34,12 @@ public class Mdb extends Channel{
             out = new FileOutputStream("file_" + fileId + "/chunk_" + chunkNo);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            System.exit(-1);
         }
         try {
             int count = 0;
 
             for(int i = 0; i < msg.length - 1; i++) {
-
                 if(count >= 2)
                     out.write((char) msg[i]);
 
@@ -50,6 +50,7 @@ public class Mdb extends Channel{
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
+            System.exit(-1);
         }
     }
 
@@ -67,6 +68,16 @@ public class Mdb extends Channel{
 
                     String[] params = new String[]{tokens[3], tokens[4]};
                     message = MessageFactory.addHeader("STORED", params);
+
+                    Random rand = new Random();
+                    int interval = rand.nextInt(401);
+                    try {
+                        Thread.sleep(interval);
+                    } catch(InterruptedException e) {
+                        e.printStackTrace();
+                        System.exit(-1);
+                    }
+
                     sendPacket(Mc.socket, message, Mc.address, Mc.port);
                 }
             }
