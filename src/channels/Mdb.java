@@ -26,12 +26,16 @@ public class Mdb extends Channel{
     {
         FileOutputStream out = null;
 
-        File directory = new File(fileId);// + msg[3]);
+        File directoryFiles = new File("Files");
+        if (! directoryFiles.exists())
+            directoryFiles.mkdir();
+
+        File directory = new File("Files/" + fileId);
         if (! directory.exists())
             directory.mkdir();
 
         try {
-            out = new FileOutputStream(fileId + "/" + chunkNo);
+            out = new FileOutputStream("Files/" + fileId + "/" + chunkNo);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             System.exit(-1);

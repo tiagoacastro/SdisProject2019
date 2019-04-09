@@ -36,13 +36,13 @@ public class Peer {
 
         if (senderId == 1) {
             int rd = 1;
-            String file_path = "image2.jpg";
+            String file_path = "rsc/image2.jpg";
 
             StoreRequest req = new StoreRequest(executor, file_path, rd);
             requests.put("1", req);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
-            /*DeleteRequest req = new DeleteRequest(executor, "3");
+            /*DeleteRequest req = new DeleteRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);*/
 
             try {
