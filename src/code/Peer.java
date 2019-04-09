@@ -12,7 +12,6 @@ public class Peer {
     static String version;
     public static int senderId;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
-    public static HashMap<String, String> backedFiles = new HashMap<>();
 
     private static void setupThread(Thread th) {
         try {
@@ -43,7 +42,7 @@ public class Peer {
         setupThread(mdb);
         setupThread(mc);
 
-        backedFiles.put("image2.jpg","3");
+        //backedFiles.put("image2.jpg","3");
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(20);
 
@@ -57,7 +56,7 @@ public class Peer {
 
             String file_path = "image2.jpg";
 
-            DeleteRequest req = new DeleteRequest(executor, backedFiles.get(file_path));
+            DeleteRequest req = new DeleteRequest(executor, "3");
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
             try {
