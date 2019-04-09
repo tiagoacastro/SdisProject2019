@@ -16,7 +16,7 @@ public class Chunk implements Runnable{
     private int rd;
     private int sends = 0;
 
-    public Chunk(int chunkNo, String fileId, byte[] body, int rd, ScheduledExecutorService executor)
+    Chunk(int chunkNo, String fileId, byte[] body, int rd, ScheduledExecutorService executor)
     {
         this.chunkNo = chunkNo;
         this.fileId = fileId;
@@ -36,7 +36,6 @@ public class Chunk implements Runnable{
         byte [] headerBytes, message;
 
         if (peers.size() < rd) {
-
             String header;
             String [] params;
 
@@ -54,7 +53,7 @@ public class Chunk implements Runnable{
             Channel.sendPacketBytes(Mdb.socket, message, Mdb.address, Mdb.port);
             sends++;
             if(sends == 5){
-                System.out.println("too many sends #" + chunkNo);
+                System.out.println("too many sends of #" + chunkNo);
             } else {
                 switch (sends) {
                     case 2:

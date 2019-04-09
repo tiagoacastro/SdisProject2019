@@ -17,8 +17,8 @@ public class Peer {
         try {
             th.join();
         } catch (InterruptedException e) {
-            System.err.println("Error waiting for thread");
-            return;
+            e.printStackTrace();
+            System.exit(-1);
         }
         th.start();
     }
@@ -52,15 +52,14 @@ public class Peer {
             requests.put("1", req);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
-            /*String file_path = "image2.jpg";
-
-            DeleteRequest req = new DeleteRequest(executor, "3");
+            /*DeleteRequest req = new DeleteRequest(executor, "3");
             executor.schedule(req, 0, TimeUnit.SECONDS);*/
 
             try {
                 executor.awaitTermination(1, TimeUnit.DAYS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                System.exit(-1);
             }
             executor.shutdown();
         }

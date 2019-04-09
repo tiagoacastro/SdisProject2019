@@ -1,8 +1,5 @@
 package code;
 
-import channels.Channel;
-import channels.Mdb;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -81,8 +78,8 @@ public class StoreRequest extends TimerTask {
         try {
             inputStream = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            System.err.println("Error opening file");
-            System.exit(-5);
+            e.printStackTrace();
+            System.exit(-1);
         }
 
         try {
@@ -101,8 +98,8 @@ public class StoreRequest extends TimerTask {
                 this.chunks.add(chunk);
             }
         } catch(IOException e) {
-            System.err.println("Error reading file");
-            System.exit(-6);
+            e.printStackTrace();
+            System.exit(-1);
         }
     }
 

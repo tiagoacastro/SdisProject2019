@@ -13,8 +13,8 @@ public abstract class Channel implements Runnable{
             InetAddress add = InetAddress.getByName(address);
             return add;
         } catch (UnknownHostException e) {
-            System.err.println("Multicast address unknown");
-            System.exit(-2);
+            e.printStackTrace();
+            System.exit(-1);
         }
         return null;
     }
@@ -26,7 +26,7 @@ public abstract class Channel implements Runnable{
             mcSocket.setTimeToLive(1);
             return mcSocket;
         } catch (IOException e) {
-            System.err.println("Error setting up multicast MC socket");
+            e.printStackTrace();
             System.exit(-1);
         }
         return null;
@@ -41,8 +41,8 @@ public abstract class Channel implements Runnable{
             trimMessage(msg);
             return trimMessage(msg);
         } catch (IOException e) {
-            System.err.println("Error receiving packet");
-            System.exit(-4);
+            e.printStackTrace();
+            System.exit(-1);
         }
         return null;
     }
@@ -77,8 +77,8 @@ public abstract class Channel implements Runnable{
             socket.send(packet);
             System.out.println("Packet sent");
         } catch (IOException e) {
-            System.err.println("Packet send failed");
-            System.exit(-3);
+            e.printStackTrace();
+            System.exit(-1);
         }
     }
 }
