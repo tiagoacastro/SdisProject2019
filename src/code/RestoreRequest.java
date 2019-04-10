@@ -31,7 +31,7 @@ public class RestoreRequest implements Runnable {
     private void encodeFileId() {
         String originalString = null;
         MessageDigest md = null;
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         try {
             originalString = this.file.getName() + "_" +
