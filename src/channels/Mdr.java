@@ -38,7 +38,7 @@ public class Mdr extends Channel{
                 count++;
         }
 
-        return Arrays.copyOf(body, index-1);
+        return Arrays.copyOf(body, index);
     }
 
     @Override

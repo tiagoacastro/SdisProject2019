@@ -55,7 +55,7 @@ public abstract class Channel implements Runnable{
             index--;
         }
 
-        return Arrays.copyOf(msg, msg.length - paddingZeros);
+        return Arrays.copyOf(msg, msg.length - paddingZeros + 1);
     }
 
     static void sendPacket(MulticastSocket socket, String message, InetAddress address, int port) {

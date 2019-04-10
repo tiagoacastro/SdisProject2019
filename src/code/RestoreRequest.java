@@ -95,7 +95,7 @@ public class RestoreRequest implements Runnable {
 
                 byte[] body = this.chunks.get(i).getBody();
 
-                for (int j = 0; j < body.length - 1; j++)
+                for (int j = 0; j < body.length; j++)
                     out.write((char) body[j]);
             }
 
