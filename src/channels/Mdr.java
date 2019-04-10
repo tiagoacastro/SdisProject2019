@@ -12,13 +12,11 @@ public class Mdr extends Channel{
     public static InetAddress address;
     public static int port;
     public static MulticastSocket socket;
-    private static HashMap<String, RestoreRequest> restoreRequests;
 
-    public Mdr (String addr, int port, HashMap<String, RestoreRequest> requests){
+    public Mdr (String addr, int port){
         Mdr.address = getAddress(addr);
         Mdr.port = port;
         Mdr.socket = getMCSocket(address, port);
-        Mdr.restoreRequests = requests;
     }
 
     private byte[] getBody (byte[] msg)
@@ -56,7 +54,7 @@ public class Mdr extends Channel{
 
                             byte[] body;
 
-                            RestoreRequest req = restoreRequests.get(tokens[3]);
+                            RestoreRequest req = Peer.restoreRequests.get(tokens[3]);
                             body = getBody(msg);
                             req.receiveChunk(Integer.parseInt(tokens[4]), body);
                     }
