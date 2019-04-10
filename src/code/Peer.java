@@ -113,7 +113,7 @@ public class Peer {
 
         Thread mdb = new Thread(new Mdb(mdbAddr, mdbPort));
         Thread mc = new Thread(new Mc(mcAddr, mcPort));
-        Thread mdr = new Thread(new Mdr(mdrAddr, mdrPort, restoreRequests));
+        Thread mdr = new Thread(new Mdr(mdrAddr, mdrPort));
 
         setupThread(mdb);
         setupThread(mc);

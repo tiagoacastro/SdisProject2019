@@ -10,7 +10,7 @@ public class RestoreChunk implements Runnable{
     private byte[] body = null;
 
 
-    public RestoreChunk(int chunkNo, String fileId)
+    RestoreChunk(int chunkNo, String fileId)
     {
         this.fileId = fileId;
         this.chunkNo = chunkNo;
@@ -23,7 +23,7 @@ public class RestoreChunk implements Runnable{
     @Override
     public void run() {
         String[] params = new String[]{this.fileId, String.valueOf(this.chunkNo)};
-        String message = MessageFactory.addHeader("GETCHUNK", params);
+        String message = Auxiliary.addHeader("GETCHUNK", params);
         Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
     }
 }

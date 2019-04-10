@@ -1,6 +1,6 @@
 package channels;
 
-import code.MessageFactory;
+import code.Auxiliary;
 import code.Peer;
 
 import java.io.File;
@@ -81,7 +81,7 @@ public class Mdb extends Channel{
                             createChunk(msg, tokens[3], tokens[4], Integer.parseInt(tokens[5]));
 
                             String[] params = new String[]{tokens[3], tokens[4]};
-                            message = MessageFactory.addHeader("STORED", params);
+                            message = Auxiliary.addHeader("STORED", params);
 
                             Random rand = new Random();
                             int interval = rand.nextInt(401);

@@ -1,7 +1,7 @@
 package channels;
 
 import code.Key;
-import code.MessageFactory;
+import code.Auxiliary;
 import code.Peer;
 import code.StoreRequest;
 
@@ -107,7 +107,7 @@ public class Mc extends Channel{
                                 if((body = retrieveChunk(tokens[3], tokens[4])) != null)
                                 {
                                     String[] params = new String[]{tokens[3], tokens[4]};
-                                    header = MessageFactory.addHeader("CHUNK", params);
+                                    header = Auxiliary.addHeader("CHUNK", params);
                                     headerBytes = header.getBytes();
                                     messageSize = headerBytes.length + body.length;
 
