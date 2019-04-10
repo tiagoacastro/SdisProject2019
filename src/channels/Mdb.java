@@ -42,7 +42,7 @@ public class Mdb extends Channel{
                 return;
 
         try {
-            out = new FileOutputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + ":" + rd);
+            out = new FileOutputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_" + rd);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             System.exit(-1);
@@ -75,22 +75,25 @@ public class Mdb extends Channel{
                 if (message != null) {
                     String[] tokens = message.split(" ");
                     if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
+                        File chunk = new File("peer" + Peer.senderId + "/backup/" + tokens[3] + "/chk" + tokens[4] + "_" + Integer.parseInt(tokens[5]));
 
-                        createChunk(msg, tokens[3], tokens[4], Integer.parseInt(tokens[5]));
+                        if (!chunk.exists()){
+                            createChunk(msg, tokens[3], tokens[4], Integer.parseInt(tokens[5]));
 
-                        String[] params = new String[]{tokens[3], tokens[4]};
-                        message = MessageFactory.addHeader("STORED", params);
+                            String[] params = new String[]{tokens[3], tokens[4]};
+                            message = MessageFactory.addHeader("STORED", params);
 
-                        Random rand = new Random();
-                        int interval = rand.nextInt(401);
-                        try {
-                            Thread.sleep(interval);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            System.exit(-1);
+                            Random rand = new Random();
+                            int interval = rand.nextInt(401);
+                            try {
+                                Thread.sleep(interval);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                                System.exit(-1);
+                            }
+
+                            sendPacket(Mc.socket, message, Mc.address, Mc.port);
                         }
-
-                        sendPacket(Mc.socket, message, Mc.address, Mc.port);
                     }
                 }
             }

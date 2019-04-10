@@ -7,8 +7,6 @@ import code.StoreRequest;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
@@ -19,7 +17,7 @@ public class Mc extends Channel{
     public static InetAddress address;
     public static int port;
     public static MulticastSocket socket;
-    private static ArrayList<Integer> chunksReceived = new ArrayList();
+    private static ArrayList<Integer> chunksReceived = new ArrayList<>();
 
     public Mc (String addr, int port){
         Mc.address = getAddress(addr);
@@ -37,29 +35,19 @@ public class Mc extends Channel{
         byte[] buf = new byte[65000], trimmedBuf = new byte[65000];
 
         File file = new File("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
-        FileInputStream inputStream = null;
+        FileInputStream inputStream;
 
         if(!file.isFile())
             return null;
 
         try {
             inputStream = new FileInputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
 
-        try {
-            while ((bytesRead = inputStream.read(buf)) > 0) {
+            while ((bytesRead = inputStream.read(buf)) > 0)
                 trimmedBuf = Arrays.copyOf(buf, bytesRead);
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
 
-        try {
             inputStream.close();
-        } catch (IOException e) {
+        } catch(Exception e) {
             e.printStackTrace();
             System.exit(-1);
         }
@@ -88,7 +76,8 @@ public class Mc extends Channel{
                         switch (tokens[0]) {
                             case "STORED":
                                 StoreRequest req = Peer.requests.get(tokens[3]);
-                                req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
+                                if(req != null)
+                                    req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
                                 break;
                             case "DELETE":
                                 File directory = new File("peer" + Peer.senderId + "/backup/" + tokens[3]);
