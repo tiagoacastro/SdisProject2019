@@ -21,44 +21,14 @@ public class StoreRequest implements Runnable {
         this.rd = rd;
         this.file = new File(fp);
 
-        encodeFileId();
+        this.fileId = Auxiliary.encodeFileId(file);
+        Peer.requests.put(this.fileId, this);
 
         getChunks();
     }
 
     public void store(int chunkNo, int senderId) {
         chunks.get(chunkNo).addPeer(senderId);
-    }
-
-    private void encodeFileId()
-    {
-        String originalString = null;
-        MessageDigest md = null;
-        StringBuilder result = new StringBuilder();
-
-        try {
-            originalString = this.file.getName() + "_" +
-                             this.file.lastModified() + "_" +
-                             Files.getOwner(this.file.toPath());
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
-
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
-
-        md.update(originalString.getBytes());
-
-        for (byte byt : md.digest())
-            result.append(Integer.toString((byt & 0xff) + 0x100, 16).substring(1));
-
-        this.fileId = result.toString();
-        Peer.requests.put(this.fileId, this);
     }
 
     private void getChunks() {

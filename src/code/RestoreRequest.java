@@ -34,7 +34,6 @@ public class RestoreRequest implements Runnable {
             if(this.chunksReceived == this.numberChunks)
                 notifyAll();
         }
-
     }
 
     private void createFile()
