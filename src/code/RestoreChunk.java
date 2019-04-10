@@ -3,21 +3,17 @@ package code;
 import channels.Channel;
 import channels.Mc;
 
-import java.util.concurrent.ScheduledExecutorService;
-
 public class RestoreChunk implements Runnable{
 
-    private ScheduledExecutorService executor;
     private String fileId;
     private int chunkNo;
     private byte[] body = null;
 
 
-    public RestoreChunk(int chunkNo, String fileId, ScheduledExecutorService executor)
+    public RestoreChunk(int chunkNo, String fileId)
     {
         this.fileId = fileId;
         this.chunkNo = chunkNo;
-        this.executor = executor;
     }
 
     public void addBody(byte[] body) {this.body = body;}

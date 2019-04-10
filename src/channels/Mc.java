@@ -7,9 +7,11 @@ import code.StoreRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.Arrays;
+import java.util.Random;
 
 public class Mc extends Channel{
     public static InetAddress address;
@@ -44,6 +46,13 @@ public class Mc extends Channel{
                 trimmedBuf = Arrays.copyOf(buf, bytesRead);
             }
         } catch(Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
+        try {
+            inputStream.close();
+        } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
         }
@@ -101,6 +110,15 @@ public class Mc extends Channel{
                                     getChunkMessage = new byte[messageSize];
                                     System.arraycopy(headerBytes, 0, getChunkMessage, 0, headerBytes.length);
                                     System.arraycopy(body, 0, getChunkMessage, headerBytes.length, body.length);
+
+                                    Random rand = new Random();
+                                    int interval = rand.nextInt(401);
+                                    try {
+                                        Thread.sleep(interval);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                        System.exit(-1);
+                                    }
 
                                     Channel.sendPacketBytes(Mdr.socket, getChunkMessage, Mdr.address, Mdr.port);
                                 }

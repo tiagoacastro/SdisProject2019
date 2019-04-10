@@ -113,7 +113,7 @@ public class RestoreRequest implements Runnable {
 
         for(int i = 0; i < this.numberChunks; i++)
         {
-            RestoreChunk rc = new RestoreChunk(i, this.fileId, this.executor);
+            RestoreChunk rc = new RestoreChunk(i, this.fileId);
             this.chunks.add(rc);
             this.executor.schedule(rc, 0, TimeUnit.SECONDS);
         }
