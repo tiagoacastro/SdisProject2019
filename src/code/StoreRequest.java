@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class StoreRequest implements Runnable, Serializable {
-    transient private ScheduledExecutorService executor;
+public class StoreRequest implements Runnable {
+    private ScheduledExecutorService executor;
     private File file;
     private String fileId;
     private int rd;

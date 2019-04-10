@@ -4,19 +4,18 @@ import channels.Mc;
 import channels.Mdb;
 import channels.Mdr;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Peer implements Serializable{
+public class Peer{
     public static String version;
     public static int senderId;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
 
-    void start(String[] args) {
+    public static void main(String[] args) {
         if(args.length != 8)
             return;
 
@@ -33,7 +32,7 @@ public class Peer implements Serializable{
         int mdrPort = Integer.parseInt(args[7]);
 
         Thread mdb = new Thread(new Mdb(mdbAddr, mdbPort));
-        Thread mc = new Thread(new Mc(requests, mcAddr, mcPort));
+        Thread mc = new Thread(new Mc(mcAddr, mcPort));
         Thread mdr = new Thread(new Mdr(mdrAddr, mdrPort, restoreRequests));
 
         setupThread(mdb);
@@ -46,11 +45,11 @@ public class Peer implements Serializable{
             int rd = 1;
             String file_path = "rsc/image2.jpg";
 
-            /*StoreRequest req = new StoreRequest(requests, executor, file_path, rd);
-            executor.schedule(req, 0, TimeUnit.SECONDS);*/
-
-            DeleteRequest req = new DeleteRequest(executor, file_path);
+            StoreRequest req = new StoreRequest(requests, executor, file_path, rd);
             executor.schedule(req, 0, TimeUnit.SECONDS);
+
+            /*DeleteRequest req = new DeleteRequest(executor, file_path);
+            executor.schedule(req, 0, TimeUnit.SECONDS);*/
 
             /*RestoreRequest req = new RestoreRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);*/
