@@ -18,7 +18,7 @@ public class Mdr extends Channel{
         Mdr.address = getAddress(addr);
         Mdr.port = port;
         Mdr.socket = getMCSocket(address, port);
-        Mdr.restoreRequests= requests;
+        Mdr.restoreRequests = requests;
     }
 
     private byte[] getBody (byte[] msg)
@@ -51,6 +51,8 @@ public class Mdr extends Channel{
                 if (message != null) {
                     String[] tokens = message.split(" ");
                     if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("CHUNK")) {
+
+                            Mc.addChunk(Integer.parseInt(tokens[4]));
 
                             byte[] body;
 

@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -18,12 +19,17 @@ public class Mc extends Channel{
     public static InetAddress address;
     public static int port;
     public static MulticastSocket socket;
+    private static ArrayList<Integer> chunksReceived = new ArrayList();
 
     public Mc (String addr, int port){
         Mc.address = getAddress(addr);
         Mc.port = port;
         Mc.socket = getMCSocket(address, port);
+
+        chunksReceived.add(4);
     }
+
+    public static void addChunk(int chunkNo) {chunksReceived.add(chunkNo);}
 
     private byte[] retrieveChunk(String fileId, String chunkNo)
     {
@@ -129,7 +135,8 @@ public class Mc extends Channel{
                                         System.exit(-1);
                                     }
 
-                                    Channel.sendPacketBytes(Mdr.socket, getChunkMessage, Mdr.address, Mdr.port);
+                                    if(!chunksReceived.contains(Integer.parseInt(tokens[4])))
+                                        Channel.sendPacketBytes(Mdr.socket, getChunkMessage, Mdr.address, Mdr.port);
                                 }
                                 break;
                         }
