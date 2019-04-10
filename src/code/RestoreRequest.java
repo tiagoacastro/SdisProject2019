@@ -1,21 +1,24 @@
 package code;
 
-import channels.Channel;
-import channels.Mc;
-
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class RestoreRequest implements Runnable {
 
     private File file;
     private ScheduledExecutorService executor;
     private String fileId;
-    private int lastChunkReceived = -1;
+    private int chunksReceived = 0;
+    private ArrayList<RestoreChunk> chunks = new ArrayList<>();
+    private long numberChunks;
 
     RestoreRequest (ScheduledExecutorService executor, String fp) {
         this.executor = executor;
@@ -54,26 +57,73 @@ public class RestoreRequest implements Runnable {
         this.fileId = result.toString();
     }
 
-    public byte[] receiveChunk(int chunkNo, byte[] body)
+    public synchronized void receiveChunk(int chunkNo, byte[] body)
     {
-        this.lastChunkReceived = chunkNo;
-        return body;
+        if(this.chunks.get(chunkNo).getBody() == null) {
+            this.chunks.get(chunkNo).addBody(body);
+            this.chunksReceived++;
+
+            if(this.chunksReceived == this.numberChunks)
+                notifyAll();
+        }
+
+    }
+
+    private void createFile()
+    {
+        FileOutputStream out = null;
+
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (!directoryPeer.exists())
+            if(!directoryPeer.mkdir())
+                return;
+
+        File directoryRestore = new File("peer" + Peer.senderId + "/restored");
+        if (!directoryRestore.exists())
+            if(!directoryRestore.mkdir())
+                return;
+
+        try {
+            out = new FileOutputStream("peer" + Peer.senderId + "/restored/" + fileId );
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+        try {
+
+            for(int i = 0; i < this.chunks.size(); i++) {
+
+                byte[] body = this.chunks.get(i).getBody();
+
+                for (int j = 0; j < body.length - 1; j++)
+                    out.write((char) body[j]);
+            }
+
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
 
-        long numberChunks = (this.file.length() / 64000) + 1;
+        numberChunks = (this.file.length() / 64000) + 1;
 
-        for(int i = 0; i < numberChunks; i++)
+        for(int i = 0; i < this.numberChunks; i++)
         {
-            String[] params = new String[]{this.fileId, String.valueOf(i)};
-            String message = MessageFactory.addHeader("GETCHUNK", params);
-            Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
-
-            while(lastChunkReceived != i){}
+            RestoreChunk rc = new RestoreChunk(i, this.fileId, this.executor);
+            this.chunks.add(rc);
+            this.executor.schedule(rc, 0, TimeUnit.SECONDS);
         }
 
-        System.out.println("Done");
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        createFile();
     }
 }
