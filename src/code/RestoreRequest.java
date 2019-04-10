@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class RestoreRequest implements Runnable {
 
     private File file;
+    private String file_path;
     private ScheduledExecutorService executor;
     private String fileId;
     private int chunksReceived = 0;
@@ -19,6 +20,7 @@ public class RestoreRequest implements Runnable {
 
     RestoreRequest (ScheduledExecutorService executor, String fp) {
         this.executor = executor;
+        this.file_path = fp;
         this.file = new File(fp);
 
         this.fileId = Auxiliary.encodeFileId(file);
@@ -50,8 +52,22 @@ public class RestoreRequest implements Runnable {
             if(!directoryRestore.mkdir())
                 return;
 
+        byte[] fpBytes = this.file_path.getBytes();
+        String fileName = "";
+
+        for(int i = 0; i < fpBytes.length; i++)
+        {
+            char c = (char) fpBytes[i];
+
+            if(c == '/')
+                fileName = "";
+
+            else
+                fileName += c;
+        }
+
         try {
-            out = new FileOutputStream("peer" + Peer.senderId + "/restored/" + fileId );
+            out = new FileOutputStream("peer" + Peer.senderId + "/restored/" + fileName);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             System.exit(-1);

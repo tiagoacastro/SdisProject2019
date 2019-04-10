@@ -23,8 +23,6 @@ public class Mc extends Channel{
         Mc.address = getAddress(addr);
         Mc.port = port;
         Mc.socket = getMCSocket(address, port);
-
-        chunksReceived.add(4);
     }
 
     public static void addChunk(int chunkNo) {chunksReceived.add(chunkNo);}
@@ -34,14 +32,14 @@ public class Mc extends Channel{
         int bytesRead;
         byte[] buf = new byte[65000], trimmedBuf = new byte[65000];
 
-        File file = new File("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
+        File file = new File("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_2");
         FileInputStream inputStream;
 
         if(!file.isFile())
             return null;
 
         try {
-            inputStream = new FileInputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
+            inputStream = new FileInputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_2");
 
             while ((bytesRead = inputStream.read(buf)) > 0)
                 trimmedBuf = Arrays.copyOf(buf, bytesRead);
