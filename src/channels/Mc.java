@@ -1,5 +1,6 @@
 package channels;
 
+import code.Key;
 import code.MessageFactory;
 import code.Peer;
 import code.StoreRequest;
@@ -69,6 +70,14 @@ public class Mc extends Channel{
 
                 if (message != null) {
                     String[] tokens = message.split(" ");
+                    if(tokens[0].equals("STORED")){
+                        int rd = 0;
+                        Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
+                        if(Peer.rds.containsKey(key))
+                            rd = Peer.rds.get(key);
+                        rd++;
+                        Peer.rds.put(key, rd);
+                    }
                     if (Integer.parseInt(tokens[2]) != Peer.senderId)
                         switch (tokens[0]) {
                             case "STORED":

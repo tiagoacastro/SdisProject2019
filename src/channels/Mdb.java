@@ -22,7 +22,7 @@ public class Mdb extends Channel{
         Mdb.socket = getMCSocket(address, port);
     }
 
-    private void createChunk(byte[] msg, String fileId, String chunkNo)
+    private void createChunk(byte[] msg, String fileId, String chunkNo, int rd)
     {
         FileOutputStream out = null;
 
@@ -42,7 +42,7 @@ public class Mdb extends Channel{
                 return;
 
         try {
-            out = new FileOutputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
+            out = new FileOutputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + ":" + rd);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             System.exit(-1);
@@ -76,7 +76,7 @@ public class Mdb extends Channel{
                     String[] tokens = message.split(" ");
                     if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
 
-                        createChunk(msg, tokens[3], tokens[4]);
+                        createChunk(msg, tokens[3], tokens[4], Integer.parseInt(tokens[5]));
 
                         String[] params = new String[]{tokens[3], tokens[4]};
                         message = MessageFactory.addHeader("STORED", params);
