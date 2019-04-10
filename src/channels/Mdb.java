@@ -26,18 +26,23 @@ public class Mdb extends Channel{
     {
         FileOutputStream out = null;
 
-        File directoryFiles = new File("Files");
-        if (!directoryFiles.exists())
-            if(!directoryFiles.mkdir())
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (!directoryPeer.exists())
+            if(!directoryPeer.mkdir())
                 return;
 
-        File directory = new File("Files/" + fileId);
-        if (!directory.exists())
-            if(!directory.mkdir())
+        File directoryBackup = new File("peer" + Peer.senderId + "/backup");
+        if (!directoryBackup.exists())
+            if(!directoryBackup.mkdir())
+                return;
+
+        File directoryFile = new File("peer" + Peer.senderId + "/backup/" + fileId);
+        if (!directoryFile.exists())
+            if(!directoryFile.mkdir())
                 return;
 
         try {
-            out = new FileOutputStream("Files/" + fileId + "/" + chunkNo);
+            out = new FileOutputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             System.exit(-1);

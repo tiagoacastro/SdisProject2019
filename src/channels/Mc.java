@@ -71,7 +71,7 @@ public class Mc extends Channel{
                                 req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
                                 break;
                             case "DELETE":
-                                File directory = new File("Files/" + tokens[3]);
+                                File directory = new File("peer" + Peer.senderId + "/backup/" + tokens[3]);
                                 if (directory.exists()) {
                                     try {
                                         String[] files = directory.list();

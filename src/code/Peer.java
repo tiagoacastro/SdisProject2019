@@ -49,11 +49,11 @@ public class Peer implements Serializable{
             /*StoreRequest req = new StoreRequest(requests, executor, file_path, rd);
             executor.schedule(req, 0, TimeUnit.SECONDS);*/
 
-            /*DeleteRequest req = new DeleteRequest(executor, file_path);
-            executor.schedule(req, 0, TimeUnit.SECONDS);*/
-
-            RestoreRequest req = new RestoreRequest(executor, file_path);
+            DeleteRequest req = new DeleteRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);
+
+            /*RestoreRequest req = new RestoreRequest(executor, file_path);
+            executor.schedule(req, 0, TimeUnit.SECONDS);*/
 
             try {
                 executor.awaitTermination(1, TimeUnit.DAYS);
