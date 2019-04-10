@@ -6,7 +6,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -16,13 +15,11 @@ public class StoreRequest implements Runnable {
     private String fileId;
     private int rd;
     private ArrayList<Chunk> chunks = new ArrayList<>();
-    private HashMap<String, StoreRequest> requests;
 
-    StoreRequest(HashMap<String, StoreRequest> requests, ScheduledExecutorService executor, String fp, int rd) {
+    StoreRequest(ScheduledExecutorService executor, String fp, int rd) {
         this.executor = executor;
         this.rd = rd;
         this.file = new File(fp);
-        this.requests = requests;
 
         encodeFileId();
 
@@ -61,7 +58,7 @@ public class StoreRequest implements Runnable {
             result.append(Integer.toString((byt & 0xff) + 0x100, 16).substring(1));
 
         this.fileId = result.toString();
-        requests.put(this.fileId, this);
+        Peer.requests.put(this.fileId, this);
     }
 
     private void getChunks() {

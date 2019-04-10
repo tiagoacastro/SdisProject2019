@@ -45,7 +45,7 @@ public class Peer{
             int rd = 1;
             String file_path = "rsc/image2.jpg";
 
-            StoreRequest req = new StoreRequest(requests, executor, file_path, rd);
+            StoreRequest req = new StoreRequest(executor, file_path, rd);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
             /*DeleteRequest req = new DeleteRequest(executor, file_path);
