@@ -121,9 +121,16 @@ public class Peer {
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(20);
 
-        if (senderId == 1) {
-            int rd = 2;
-            String file_path = "rsc/image.jpg";
+        if (senderId == 1 || senderId == 5) {
+            int rd;
+            String file_path;
+            if(senderId == 1){
+                rd = 2;
+                file_path = "rsc/image.jpg";
+            } else {
+                rd = 2;
+                file_path = "rsc/image3.jpg";
+            }
 
             StoreRequest req = new StoreRequest(executor, file_path, rd);
             executor.schedule(req, 0, TimeUnit.SECONDS);
