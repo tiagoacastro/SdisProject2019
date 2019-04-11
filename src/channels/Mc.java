@@ -86,20 +86,22 @@ public class Mc extends Channel{
                         switch (tokens[0]) {
                             case "REMOVED":
                                 Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
-                                int rd = Peer.rds.get(key);
-                                rd--;
-                                Peer.rds.put(key, rd);
-                                /*
-                                if(rd < )
-                                rand = new Random();
-                                interval = rand.nextInt(401);
-                                try {
-                                    Thread.sleep(interval);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                    System.exit(-1);
+                                Integer rd = Peer.rds.get(key);
+                                if(rd != null){
+                                    rd--;
+                                    Peer.rds.put(key, rd);
+                                    /*
+                                    if(rd < )
+                                    rand = new Random();
+                                    interval = rand.nextInt(401);
+                                    try {
+                                        Thread.sleep(interval);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                        System.exit(-1);
+                                    }
+                                    */
                                 }
-                                */
 
                                 break;
                             case "STORED":
