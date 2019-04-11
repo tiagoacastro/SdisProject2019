@@ -65,6 +65,8 @@ public class Mc extends Channel{
 
     @Override
     public void run() {
+        Random rand;
+        int interval;
         while(true) {
             byte[] msg = getPacketMessage(socket);
             if(msg != null) {
@@ -82,10 +84,28 @@ public class Mc extends Channel{
                     }
                     if (Integer.parseInt(tokens[2]) != Peer.senderId)
                         switch (tokens[0]) {
+                            case "REMOVED":
+                                Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
+                                int rd = Peer.rds.get(key);
+                                rd--;
+                                Peer.rds.put(key, rd);
+                                /*
+                                if(rd < )
+                                rand = new Random();
+                                interval = rand.nextInt(401);
+                                try {
+                                    Thread.sleep(interval);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                    System.exit(-1);
+                                }
+                                */
+
+                                break;
                             case "STORED":
                                 StoreRequest req = Peer.requests.get(tokens[3]);
                                 if(req != null)
-                                    req.store(Integer.parseInt(tokens[4]), Integer.parseInt(tokens[2]));
+                                    req.store(Integer.parseInt(tokens[4]));
                                 break;
                             case "DELETE":
                                 File directory = new File("peer" + Peer.senderId + "/backup/" + tokens[3]);
@@ -123,8 +143,8 @@ public class Mc extends Channel{
                                     System.arraycopy(headerBytes, 0, getChunkMessage, 0, headerBytes.length);
                                     System.arraycopy(body, 0, getChunkMessage, headerBytes.length, body.length);
 
-                                    Random rand = new Random();
-                                    int interval = rand.nextInt(401);
+                                    rand = new Random();
+                                    interval = rand.nextInt(401);
                                     try {
                                         Thread.sleep(interval);
                                     } catch (InterruptedException e) {

@@ -1,9 +1,6 @@
 package code;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,8 +24,8 @@ public class StoreRequest implements Runnable {
         getChunks();
     }
 
-    public void store(int chunkNo, int senderId) {
-        chunks.get(chunkNo).addPeer(senderId);
+    public void store(int chunkNo) {
+        chunks.get(chunkNo).store();
     }
 
     private void getChunks() {
@@ -48,7 +45,10 @@ public class StoreRequest implements Runnable {
             while ((bytesRead = inputStream.read(buf)) > 0) {
                 byte[] trimmedBuf  = Arrays.copyOf(buf, bytesRead);
 
-                Chunk chunk = new Chunk(chunkNo, this.fileId, trimmedBuf, rd, executor);
+                Integer stores = Peer.rds.get(new Key(fileId, chunkNo));
+                if(stores == null)
+                    stores = 0;
+                Chunk chunk = new Chunk(chunkNo, this.fileId, trimmedBuf, rd, executor, stores);
                 this.chunks.add(chunk);
 
                 chunkNo++;
@@ -56,7 +56,10 @@ public class StoreRequest implements Runnable {
 
             if(file.length() % maxChunkSize == 0)
             {
-                Chunk chunk = new Chunk(chunkNo, this.fileId, null, rd, executor);
+                Integer stores = Peer.rds.get(new Key(fileId, chunkNo));
+                if(stores == null)
+                    stores = 0;
+                Chunk chunk = new Chunk(chunkNo, this.fileId, null, rd, executor, stores);
                 this.chunks.add(chunk);
             }
         } catch(IOException e) {

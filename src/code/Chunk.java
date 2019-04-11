@@ -3,7 +3,6 @@ package code;
 import channels.Channel;
 import channels.Mdb;
 
-import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -12,30 +11,30 @@ public class Chunk implements Runnable{
     private int chunkNo;
     private String  fileId;
     private byte[] body;
-    private ArrayList<Integer> peers;
     private int rd;
+    private int stores;
     private int sends = 0;
 
-    Chunk(int chunkNo, String fileId, byte[] body, int rd, ScheduledExecutorService executor)
+    Chunk(int chunkNo, String fileId, byte[] body, int rd, ScheduledExecutorService executor, int stores)
     {
         this.chunkNo = chunkNo;
         this.fileId = fileId;
         this.body = body;
-        this.peers = new ArrayList<>();
         this.rd = rd;
         this.executor = executor;
+        this.stores = stores;
     }
 
-    public void addPeer(int peerId) {
-        this.peers.add(peerId);
-    }
+    public void store() { stores++; }
 
     @Override
     public void run(){
         int messageSize;
         byte [] headerBytes, message;
 
-        if (peers.size() < rd) {
+        System.out.println(stores);
+
+        if (stores < rd) {
             String header;
             String [] params;
 

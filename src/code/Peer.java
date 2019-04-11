@@ -1,5 +1,6 @@
 package code;
 
+import channels.Channel;
 import channels.Mc;
 import channels.Mdb;
 import channels.Mdr;
@@ -129,7 +130,7 @@ public class Peer implements PeerInterface{
 
         version = args[0];
         senderId = Integer.parseInt(args[1]);
-
+        /*
         accessPoint = "Peer" + senderId;
 
         try {
@@ -142,7 +143,7 @@ public class Peer implements PeerInterface{
             e.printStackTrace();
             System.exit(-1);
         }
-
+        */
         loadRds();
 
         String mdbAddr = args[2];
@@ -169,7 +170,7 @@ public class Peer implements PeerInterface{
             String file_path;
             if(senderId == 1){
                 rd = 2;
-                file_path = "rsc/image.jpg";
+                file_path = "rsc/image2.jpg";
             } else {
                 rd = 2;
                 file_path = "rsc/image3.jpg";
@@ -183,6 +184,9 @@ public class Peer implements PeerInterface{
 
             /*RestoreRequest req = new RestoreRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);*/
+
+            /*ReclaimNotice nt = new ReclaimNotice(file_path, 1);
+            executor.schedule(nt, 0, TimeUnit.SECONDS);*/
 
             try {
                 executor.awaitTermination(1, TimeUnit.DAYS);
