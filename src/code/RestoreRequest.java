@@ -12,9 +12,9 @@ import java.util.ArrayList;
 public class RestoreRequest implements Runnable {
 
     private File file;
-    private String file_path;
+    private String file_path; 
     private String fileId;
-    private ArrayList<RestoredChunk> chunks = new ArrayList<>();
+    private ArrayList<byte[]> chunksContent = new ArrayList<>();
 
     RestoreRequest (String fp) {
         this.file_path = fp;
@@ -26,9 +26,8 @@ public class RestoreRequest implements Runnable {
 
     public synchronized void receiveChunk(int chunkNo, byte[] body)
     {
-        if(this.chunks.size() == chunkNo) {
-            RestoredChunk rc = new RestoredChunk(chunkNo, body);
-            this.chunks.add(rc);
+        if(this.chunksContent.size() == chunkNo) {
+            this.chunksContent.add(body);
             notifyAll();
         }
     }
@@ -69,11 +68,9 @@ public class RestoreRequest implements Runnable {
         }
         try {
 
-            for(RestoredChunk chunk : this.chunks) {
+            for(byte[] chunkBody : this.chunksContent) {
 
-                byte[] body = chunk.getBody();
-
-                for (byte b : body)
+                for (byte b : chunkBody)
                     out.write((char) b);
             }
 
@@ -102,7 +99,7 @@ public class RestoreRequest implements Runnable {
 
             chunkNo++;
 
-        } while (this.chunks.get(chunkNo - 1).getBody().length == 64000);
+        } while (this.chunksContent.get(chunkNo - 1).length == 64000);
 
         createFile();
     }
