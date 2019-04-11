@@ -1,25 +1,22 @@
 package code;
 
+import channels.Channel;
+import channels.Mc;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class RestoreRequest implements Runnable {
 
     private File file;
     private String file_path;
-    private ScheduledExecutorService executor;
     private String fileId;
-    private int chunksReceived = 0;
-    private ArrayList<RestoreChunk> chunks = new ArrayList<>();
-    private long numberChunks;
+    private ArrayList<RestoredChunk> chunks = new ArrayList<>();
 
-    RestoreRequest (ScheduledExecutorService executor, String fp) {
-        this.executor = executor;
+    RestoreRequest (String fp) {
         this.file_path = fp;
         this.file = new File(fp);
 
@@ -29,12 +26,10 @@ public class RestoreRequest implements Runnable {
 
     public synchronized void receiveChunk(int chunkNo, byte[] body)
     {
-        if(this.chunks.get(chunkNo).getBody() == null) {
-            this.chunks.get(chunkNo).addBody(body);
-            this.chunksReceived++;
-
-            if(this.chunksReceived == this.numberChunks)
-                notifyAll();
+        if(this.chunks.size() == chunkNo) {
+            RestoredChunk rc = new RestoredChunk(chunkNo, body);
+            this.chunks.add(rc);
+            notifyAll();
         }
     }
 
@@ -74,7 +69,7 @@ public class RestoreRequest implements Runnable {
         }
         try {
 
-            for(RestoreChunk chunk : this.chunks) {
+            for(RestoredChunk chunk : this.chunks) {
 
                 byte[] body = chunk.getBody();
 
@@ -92,20 +87,22 @@ public class RestoreRequest implements Runnable {
     @Override
     public synchronized void run() {
 
-        numberChunks = (this.file.length() / 64000) + 1;
+        int chunkNo = 0;
 
-        for(int i = 0; i < this.numberChunks; i++)
-        {
-            RestoreChunk rc = new RestoreChunk(i, this.fileId);
-            this.chunks.add(rc);
-            this.executor.schedule(rc, 0, TimeUnit.SECONDS);
-        }
+        do {
+            String[] params = new String[]{this.fileId, String.valueOf(chunkNo)};
+            String message = Auxiliary.addHeader("GETCHUNK", params);
+            Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
 
-        try {
-            wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            chunkNo++;
+
+        } while (this.chunks.get(chunkNo - 1).getBody().length == 64000);
 
         createFile();
     }

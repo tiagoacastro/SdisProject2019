@@ -31,15 +31,25 @@ public class Mc extends Channel{
     {
         int bytesRead;
         byte[] buf = new byte[65000], trimmedBuf = new byte[65000];
-
-        File file = new File("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_2");
         FileInputStream inputStream;
 
-        if(!file.isFile())
+        int rd = 1;
+
+        while (rd < 10) {
+
+            File file = new File("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_" + rd);
+
+            if (file.isFile())
+                break;
+
+            rd++;
+        }
+
+        if(rd == 10)
             return null;
 
         try {
-            inputStream = new FileInputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_2");
+            inputStream = new FileInputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_" + rd);
 
             while ((bytesRead = inputStream.read(buf)) > 0)
                 trimmedBuf = Arrays.copyOf(buf, bytesRead);
