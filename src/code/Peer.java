@@ -1,6 +1,5 @@
 package code;
 
-import channels.Channel;
 import channels.Mc;
 import channels.Mdb;
 import channels.Mdr;
@@ -19,6 +18,7 @@ public class Peer implements PeerInterface{
     public static String version;
     public static int senderId;
     public static String accessPoint;
+    public static ScheduledExecutorService executor;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Integer> rds = new HashMap<>();
@@ -92,17 +92,20 @@ public class Peer implements PeerInterface{
 
     @Override
     public void backup(String file_path, Integer replicationDegree) throws RemoteException {
-
+        StoreRequest req = new StoreRequest(executor, file_path, replicationDegree);
+        executor.schedule(req, 0, TimeUnit.SECONDS);
     }
 
     @Override
     public void restore(String file_path) throws RemoteException {
-
+        RestoreRequest req = new RestoreRequest(file_path);
+        executor.schedule(req, 0, TimeUnit.SECONDS);
     }
 
     @Override
     public void delete(String file_path) throws RemoteException {
-
+        DeleteRequest req = new DeleteRequest(executor, file_path);
+        executor.schedule(req, 0, TimeUnit.SECONDS);
     }
 
     @Override
@@ -130,20 +133,21 @@ public class Peer implements PeerInterface{
 
         version = args[0];
         senderId = Integer.parseInt(args[1]);
-        /*
-        accessPoint = "Peer" + senderId;
+
+        accessPoint = "peer" + senderId;
 
         try {
             Peer obj = new Peer();
             PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(obj, 0);
-            Registry registry = LocateRegistry.createRegistry(1923);
+            Registry registry = LocateRegistry.createRegistry(1098 + senderId);
             registry.bind(accessPoint, stub);
+        }
 
-        } catch (Exception e) {
+        catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
         }
-        */
+
         loadRds();
 
         String mdbAddr = args[2];
@@ -163,7 +167,7 @@ public class Peer implements PeerInterface{
         setupThread(mc);
         setupThread(mdr);
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(20);
+        executor = Executors.newScheduledThreadPool(20);
 
         if (senderId == 1 || senderId == 5) {
             int rd;
@@ -176,8 +180,8 @@ public class Peer implements PeerInterface{
                 file_path = "rsc/image3.jpg";
             }
 
-            StoreRequest req = new StoreRequest(executor, file_path, rd);
-            executor.schedule(req, 0, TimeUnit.SECONDS);
+            /*StoreRequest req = new StoreRequest(executor, file_path, rd);
+            executor.schedule(req, 0, TimeUnit.SECONDS);*/
 
             /*DeleteRequest req = new DeleteRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);*/
