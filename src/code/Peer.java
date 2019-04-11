@@ -5,14 +5,19 @@ import channels.Mdb;
 import channels.Mdr;
 
 import java.io.*;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Peer {
+public class Peer implements PeerInterface{
     public static String version;
     public static int senderId;
+    public static String accessPoint;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Integer> rds = new HashMap<>();
@@ -84,6 +89,31 @@ public class Peer {
         }
     }
 
+    @Override
+    public void backup(String file_path, Integer replicationDegree) throws RemoteException {
+
+    }
+
+    @Override
+    public void restore(String file_path) throws RemoteException {
+
+    }
+
+    @Override
+    public void delete(String file_path) throws RemoteException {
+
+    }
+
+    @Override
+    public void reclaim(int maximum_space) throws RemoteException {
+
+    }
+
+    @Override
+    public void state() throws RemoteException {
+
+    }
+
     private static class Hook extends Thread{
         @Override
         public void run() {
@@ -99,6 +129,19 @@ public class Peer {
 
         version = args[0];
         senderId = Integer.parseInt(args[1]);
+
+        accessPoint = "Peer" + senderId;
+
+        try {
+            Peer obj = new Peer();
+            PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(obj, 0);
+            Registry registry = LocateRegistry.createRegistry(1923);
+            registry.bind(accessPoint, stub);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
 
         loadRds();
 
