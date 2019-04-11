@@ -145,6 +145,7 @@ public class Mc extends Channel{
 
                                     rand = new Random();
                                     interval = rand.nextInt(401);
+
                                     try {
                                         Thread.sleep(interval);
                                     } catch (InterruptedException e) {
@@ -154,6 +155,8 @@ public class Mc extends Channel{
 
                                     if(!chunksReceived.contains(Integer.parseInt(tokens[4])))
                                         Channel.sendPacketBytes(Mdr.socket, getChunkMessage, Mdr.address, Mdr.port);
+
+                                    chunksReceived.clear();
                                 }
                                 break;
                         }
