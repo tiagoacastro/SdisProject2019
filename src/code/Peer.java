@@ -111,7 +111,7 @@ public class Peer implements PeerInterface{
     @Override
     public void reclaim(int maximum_space) throws RemoteException {
         /*
-        ReclaimNotice nt = new ReclaimNotice(file_path, 1);
+        RemovedNotice nt = new RemovedNotice(file_path, 1);
         executor.schedule(nt, 0, TimeUnit.SECONDS);
         */
     }
@@ -192,7 +192,7 @@ public class Peer implements PeerInterface{
             RestoreRequest req = new RestoreRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
-            ReclaimNotice nt = new ReclaimNotice(file_path, 1);
+            RemovedNotice nt = new RemovedNotice(file_path, 1);
             executor.schedule(nt, 0, TimeUnit.SECONDS);
             */
         }

@@ -5,11 +5,11 @@ import channels.Mc;
 
 import java.io.File;
 
-public class ReclaimNotice implements Runnable {
+public class RemovedNotice implements Runnable {
     private String fileId;
     private int chunkNo;
 
-    ReclaimNotice(String fp, int chunkNo) {
+    RemovedNotice(String fp, int chunkNo) {
         this.fileId = Auxiliary.encodeFileId(new File(fp));
         this.chunkNo = chunkNo;
 
