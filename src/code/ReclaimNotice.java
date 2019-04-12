@@ -1,8 +1,5 @@
 package code;
 
-import channels.Channel;
-import channels.Mc;
-
 import java.io.File;
 
 public class ReclaimNotice implements Runnable {

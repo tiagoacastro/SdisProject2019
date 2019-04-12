@@ -27,7 +27,6 @@ public class TestApp {
             System.exit(-1);
         }
 
-
         String file_path;
 
         switch(operation)

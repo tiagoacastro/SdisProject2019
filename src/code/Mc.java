@@ -1,4 +1,4 @@
-package channels;
+package code;
 
 import code.Key;
 import code.Auxiliary;

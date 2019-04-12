@@ -1,4 +1,4 @@
-package channels;
+package code;
 
 import code.Peer;
 import code.RestoreRequest;

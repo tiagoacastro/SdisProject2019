@@ -1,7 +1,5 @@
 package code;
 
-import channels.Channel;
-import channels.Mc;
 
 import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;

@@ -1,8 +1,8 @@
 package code;
 
-import channels.Mc;
+/*import channels.Mc;
 import channels.Mdb;
-import channels.Mdr;
+import channels.Mdr;*/
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -126,8 +126,10 @@ public class Peer implements PeerInterface{
     }
 
     public static void main(String[] args) {
-        if(args.length != 8)
+        if(args.length != 8) {
+            System.out.println("fddf");
             return;
+        }
 
         Runtime.getRuntime().addShutdownHook(new Hook());
 
@@ -139,7 +141,7 @@ public class Peer implements PeerInterface{
         try {
             Peer obj = new Peer();
             PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(obj, 0);
-            Registry registry = LocateRegistry.createRegistry(1098 + senderId);
+            Registry registry = LocateRegistry.getRegistry();
             registry.bind(accessPoint, stub);
         }
 
@@ -169,7 +171,7 @@ public class Peer implements PeerInterface{
 
         executor = Executors.newScheduledThreadPool(20);
 
-        if (senderId == 1 || senderId == 5) {
+        /*if (senderId == 1 || senderId == 5) {
             int rd;
             String file_path;
             if(senderId == 1){
@@ -192,14 +194,14 @@ public class Peer implements PeerInterface{
             /*ReclaimNotice nt = new ReclaimNotice(file_path, 1);
             executor.schedule(nt, 0, TimeUnit.SECONDS);*/
 
-            try {
+            /*try {
                 executor.awaitTermination(1, TimeUnit.DAYS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 System.exit(-1);
             }
             executor.shutdown();
-        }
+        }*/
     }
 }
 
