@@ -17,8 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class Peer implements PeerInterface{
     public static String version;
     public static int senderId;
-    public static String accessPoint;
-    public static ScheduledExecutorService executor;
+    private static ScheduledExecutorService executor;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Value> rds = new HashMap<>();
@@ -138,7 +137,7 @@ public class Peer implements PeerInterface{
         version = args[0];
         senderId = Integer.parseInt(args[1]);
 
-        accessPoint = "peer" + senderId;
+        String accessPoint = "peer" + senderId;
 
         /*
         try {

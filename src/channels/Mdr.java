@@ -1,5 +1,6 @@
 package channels;
 
+import code.Key;
 import code.Peer;
 import code.RestoreRequest;
 
@@ -18,7 +19,7 @@ public class Mdr extends Channel{
         Mdr.socket = getMCSocket(address, port);
     }
 
-    private byte[] getBody (byte[] msg)
+    private static byte[] getBody (byte[] msg)
     {
         byte[] body = new byte[64000];
         int count = 0, index = 0;
@@ -48,8 +49,7 @@ public class Mdr extends Channel{
                 if (message != null) {
                     String[] tokens = message.split(" ");
                     if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("CHUNK")) {
-
-                            Mc.addChunk(Integer.parseInt(tokens[4]));
+                            Mc.addChunk(new Key(tokens[3], Integer.parseInt(tokens[4])));
 
                             byte[] body;
 

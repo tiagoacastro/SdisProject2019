@@ -14,7 +14,8 @@ public class Mc extends Channel{
     public static InetAddress address;
     public static int port;
     public static MulticastSocket socket;
-    private static ArrayList<Integer> chunksReceived = new ArrayList<>();
+    private static ArrayList<Key> chunksReceived = new ArrayList<>();
+    private static ArrayList<Key> putChunksReceived = new ArrayList<>();
 
     public Mc (String addr, int port){
         Mc.address = getAddress(addr);
@@ -22,9 +23,11 @@ public class Mc extends Channel{
         Mc.socket = getMCSocket(address, port);
     }
 
-    public static void addChunk(int chunkNo) {chunksReceived.add(chunkNo);}
+    public static void addChunk(Key chunkNo) {chunksReceived.add(chunkNo);}
 
-    private byte[] retrieveChunk(String fileId, String chunkNo)
+    public static void addPutChunk(Key chunkNo) {putChunksReceived.add(chunkNo);}
+
+    private static byte[] retrieveChunk(String fileId, String chunkNo)
     {
         int bytesRead;
         byte[] buf = new byte[65000], trimmedBuf = new byte[65000];
@@ -84,25 +87,42 @@ public class Mc extends Channel{
                         switch (tokens[0]) {
                             case "REMOVED":
                                 Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
-                                if(Peer.rds.containsKey(key))
-                                    Peer.rds.get(key).decrement();
-                                /*
-                                if(rd != null){
-                                    rd--;
-                                    Peer.rds.put(key, rd);
+                                if(Peer.rds.containsKey(key)){
+                                    Value value = Peer.rds.get(key);
+                                    value.decrement();
+                                    if(value.stores < value.rd){
+                                        byte[] body;
+                                        if((body = retrieveChunk(tokens[3], tokens[4])) != null) {
+                                            rand = new Random();
+                                            interval = rand.nextInt(401);
 
-                                    if(rd < )
-                                    rand = new Random();
-                                    interval = rand.nextInt(401);
-                                    try {
-                                        Thread.sleep(interval);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                        System.exit(-1);
+                                            putChunksReceived.clear();
+
+                                            try {
+                                                Thread.sleep(interval);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                                System.exit(-1);
+                                            }
+
+                                            if (!putChunksReceived.contains(new Key(tokens[3], Integer.parseInt(tokens[4])))) {
+                                                String header;
+                                                int messageSize;
+                                                byte[] headerBytes, putChunkMessage;
+                                                String[] params = new String[]{tokens[3], tokens[4], Integer.toString(value.rd)};
+                                                header = Auxiliary.addHeader("PUTCHUNK", params);
+                                                headerBytes = header.getBytes();
+                                                messageSize = headerBytes.length + body.length;
+
+                                                putChunkMessage = new byte[messageSize];
+                                                System.arraycopy(headerBytes, 0, putChunkMessage, 0, headerBytes.length);
+                                                System.arraycopy(body, 0, putChunkMessage, headerBytes.length, body.length);
+
+                                                Channel.sendPacketBytes(Mdb.socket, putChunkMessage, Mdb.address, Mdb.port);
+                                            }
+                                        }
                                     }
-
                                 }
-                                */
                                 break;
                             case "STORED":
                                 StoreRequest req = Peer.requests.get(tokens[3]);
@@ -130,23 +150,14 @@ public class Mc extends Channel{
                                 }
                                 break;
                             case "GETCHUNK":
-                                String header;
-                                int messageSize;
-                                byte [] headerBytes, getChunkMessage, body;
+                                byte[] body;
 
                                 if((body = retrieveChunk(tokens[3], tokens[4])) != null)
                                 {
-                                    String[] params = new String[]{tokens[3], tokens[4]};
-                                    header = Auxiliary.addHeader("CHUNK", params);
-                                    headerBytes = header.getBytes();
-                                    messageSize = headerBytes.length + body.length;
-
-                                    getChunkMessage = new byte[messageSize];
-                                    System.arraycopy(headerBytes, 0, getChunkMessage, 0, headerBytes.length);
-                                    System.arraycopy(body, 0, getChunkMessage, headerBytes.length, body.length);
-
                                     rand = new Random();
                                     interval = rand.nextInt(401);
+
+                                    chunksReceived.clear();
 
                                     try {
                                         Thread.sleep(interval);
@@ -155,8 +166,21 @@ public class Mc extends Channel{
                                         System.exit(-1);
                                     }
 
-                                    if(!chunksReceived.contains(Integer.parseInt(tokens[4])))
+                                    if(!chunksReceived.contains(new Key(tokens[3], Integer.parseInt(tokens[4])))){
+                                        String header;
+                                        int messageSize;
+                                        byte[] headerBytes, getChunkMessage;
+                                        String[] params = new String[]{tokens[3], tokens[4]};
+                                        header = Auxiliary.addHeader("CHUNK", params);
+                                        headerBytes = header.getBytes();
+                                        messageSize = headerBytes.length + body.length;
+
+                                        getChunkMessage = new byte[messageSize];
+                                        System.arraycopy(headerBytes, 0, getChunkMessage, 0, headerBytes.length);
+                                        System.arraycopy(body, 0, getChunkMessage, headerBytes.length, body.length);
+
                                         Channel.sendPacketBytes(Mdr.socket, getChunkMessage, Mdr.address, Mdr.port);
+                                    }
 
                                     chunksReceived.clear();
                                 }

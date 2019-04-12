@@ -24,7 +24,7 @@ public class Mdb extends Channel{
         Mdb.socket = getMCSocket(address, port);
     }
 
-    private void createChunk(byte[] msg, String fileId, String chunkNo)
+    private static void createChunk(byte[] msg, String fileId, String chunkNo)
     {
         FileOutputStream out = null;
 
@@ -88,6 +88,8 @@ public class Mdb extends Channel{
                         }
 
                         if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
+                            Mc.addPutChunk(new Key(tokens[3], Integer.parseInt(tokens[4])));
+
                             File chunk = new File("peer" + Peer.senderId + "/backup/" + tokens[3] + "/chk" + tokens[4]);
 
                             if (!chunk.exists()) {
