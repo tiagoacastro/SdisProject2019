@@ -139,7 +139,7 @@ public class Peer implements PeerInterface{
         try {
             Peer obj = new Peer();
             PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(obj, 0);
-            Registry registry = LocateRegistry.createRegistry(1098 + senderId);
+            Registry registry = LocateRegistry.getRegistry();
             registry.bind(accessPoint, stub);
         }
 
