@@ -21,6 +21,8 @@ public class Peer implements PeerInterface{
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Value> rds = new HashMap<>();
+    public static long allowedSpace = 1000000;
+    public static long usedSpace = 0;
 
     private static void setupThread(Thread th) {
         try {
@@ -57,6 +59,26 @@ public class Peer implements PeerInterface{
         }
     }
 
+    private static void loadSpace(){
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (directoryPeer.exists()){
+            File file = new File("peer" + Peer.senderId + "/space.txt");
+            if(file.exists()){
+                try {
+                    FileReader fr = new FileReader("peer" + Peer.senderId + "/rds.txt");
+                    BufferedReader br = new BufferedReader(fr);
+                    allowedSpace = Long.parseLong(br.readLine());
+                    usedSpace = Long.parseLong(br.readLine());
+                    br.close();
+                    fr.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+            }
+        }
+    }
+
     private static void saveRds(){
         FileOutputStream fs = null;
         PrintWriter out = null;
@@ -77,10 +99,36 @@ public class Peer implements PeerInterface{
         for(Map.Entry<Key, Value> entry : rds.entrySet()) {
             Key key = entry.getKey();
             Value value = entry.getValue();
-
             out.println(key + " " + value);
         }
 
+        closeOutputStreams(fs, out);
+    }
+
+    private static void saveSpace(){
+        FileOutputStream fs = null;
+        PrintWriter out = null;
+
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (!directoryPeer.exists())
+            if(!directoryPeer.mkdir())
+                return;
+
+        try {
+            fs = new FileOutputStream("peer" + Peer.senderId + "/space.txt");
+            out = new PrintWriter(fs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
+        out.println(allowedSpace);
+        out.println(usedSpace);
+
+        closeOutputStreams(fs, out);
+    }
+
+    private static void closeOutputStreams(FileOutputStream fs, PrintWriter out) {
         try {
             out.close();
             fs.close();
@@ -124,6 +172,7 @@ public class Peer implements PeerInterface{
     private static class Hook extends Thread{
         @Override
         public void run() {
+            saveSpace();
             saveRds();
         }
     }
@@ -150,6 +199,8 @@ public class Peer implements PeerInterface{
             System.exit(-1);
         }
         */
+
+        loadSpace();
 
         loadRds();
 

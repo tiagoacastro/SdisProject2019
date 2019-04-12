@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Mdb extends Channel{
@@ -50,21 +51,27 @@ public class Mdb extends Channel{
             System.exit(-1);
         }
         try {
-            int count = 0;
-
-            for(int i = 0; i < msg.length - 1; i++) {
-                if(count >= 2)
-                    out.write((char) msg[i]);
-
-                else if(msg[i] == 10)
-                    count++;
-            }
+            out.write(msg);
 
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
         }
+    }
+
+    private static byte[] getContent(byte[] msg){
+        int count = 0;
+        int i;
+
+        for(i = 0; i < msg.length - 1; i++) {
+            if(count >= 2)
+                break;
+            else if(msg[i] == 10)
+                count++;
+        }
+
+        return Arrays.copyOfRange(msg, i, msg.length-1);
     }
 
     @Override
@@ -76,8 +83,9 @@ public class Mdb extends Channel{
 
                 if (message != null) {
                     String[] tokens = message.split(" ");
+                    byte[] content = getContent(msg);
 
-                    if (tokens[0].equals("PUTCHUNK")) {
+                    if (tokens[0].equals("PUTCHUNK") ) {
                         Value value;
                         Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
                         if (Peer.rds.containsKey(key))
@@ -87,13 +95,15 @@ public class Mdb extends Channel{
                             Peer.rds.put(key, value);
                         }
 
-                        if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
+                        if (Integer.parseInt(tokens[2]) != Peer.senderId) {
                             Mc.addPutChunk(new Key(tokens[3], Integer.parseInt(tokens[4])));
 
                             File chunk = new File("peer" + Peer.senderId + "/backup/" + tokens[3] + "/chk" + tokens[4]);
 
-                            if (!chunk.exists()) {
-                                createChunk(msg, tokens[3], tokens[4]);
+                            if (!chunk.exists() && Peer.usedSpace + content.length <= Peer.allowedSpace) {
+                                createChunk(content, tokens[3], tokens[4]);
+
+                                Peer.usedSpace += chunk.length();
 
                                 String[] params = new String[]{tokens[3], tokens[4]};
                                 message = Auxiliary.addHeader("STORED", params);
