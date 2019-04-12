@@ -88,7 +88,7 @@ public class TestApp {
                     System.err.println("RECLAIM correct usage: java TestApp <peer_ap> RECLAIM <maximum amount of disk space>");
                     System.exit(-1);
                 }
-                int maximum_space = Integer.parseInt(args[2]);
+                long maximum_space = Long.parseLong(args[2]);
 
                 try {
                     pi.reclaim(maximum_space);

@@ -131,23 +131,7 @@ public class Mc extends Channel{
                                 break;
                             case "DELETE":
                                 File directory = new File("peer" + Peer.senderId + "/backup/" + tokens[3]);
-                                if (directory.exists()) {
-                                    try {
-                                        String[] files = directory.list();
-                                        if(files != null){
-                                            for (String s : files) {
-                                                File currentFile = new File(directory.getPath(), s);
-                                                if (!currentFile.delete())
-                                                    throw new Exception("couldn't delete file");
-                                            }
-                                            if (!directory.delete())
-                                                throw new Exception("couldn't delete file");
-                                        }
-                                    } catch(Exception e){
-                                        e.printStackTrace();
-                                        System.exit(-1);
-                                    }
-                                }
+                                Auxiliary.clearDirectory(directory);
                                 break;
                             case "GETCHUNK":
                                 byte[] body;

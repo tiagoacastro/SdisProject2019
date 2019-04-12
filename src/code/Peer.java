@@ -21,7 +21,7 @@ public class Peer implements PeerInterface{
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Value> rds = new HashMap<>();
-    public static long allowedSpace = 1000000;
+    public static long allowedSpace = 100000000;
     public static long usedSpace = 0;
 
     private static void setupThread(Thread th) {
@@ -157,7 +157,7 @@ public class Peer implements PeerInterface{
     }
 
     @Override
-    public void reclaim(int maximum_space) throws RemoteException {
+    public void reclaim(long maximum_space) throws RemoteException {
         /*
         RemovedNotice nt = new RemovedNotice(file_path, 1);
         executor.schedule(nt, 0, TimeUnit.SECONDS);
