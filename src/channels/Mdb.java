@@ -1,7 +1,9 @@
 package channels;
 
 import code.Auxiliary;
+import code.Key;
 import code.Peer;
+import code.Value;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,7 +24,7 @@ public class Mdb extends Channel{
         Mdb.socket = getMCSocket(address, port);
     }
 
-    private void createChunk(byte[] msg, String fileId, String chunkNo, int rd)
+    private void createChunk(byte[] msg, String fileId, String chunkNo)
     {
         FileOutputStream out = null;
 
@@ -42,7 +44,7 @@ public class Mdb extends Channel{
                 return;
 
         try {
-            out = new FileOutputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_" + rd);
+            out = new FileOutputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             System.exit(-1);
@@ -74,25 +76,37 @@ public class Mdb extends Channel{
 
                 if (message != null) {
                     String[] tokens = message.split(" ");
-                    if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
-                        File chunk = new File("peer" + Peer.senderId + "/backup/" + tokens[3] + "/chk" + tokens[4] + "_" + Integer.parseInt(tokens[5]));
 
-                        if (!chunk.exists()){
-                            createChunk(msg, tokens[3], tokens[4], Integer.parseInt(tokens[5]));
+                    if (tokens[0].equals("PUTCHUNK")) {
+                        Value value;
+                        Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
+                        if (Peer.rds.containsKey(key))
+                            Peer.rds.get(key).rd = Integer.parseInt(tokens[5]);
+                        else {
+                            value = new Value(0, Integer.parseInt(tokens[5]));
+                            Peer.rds.put(key, value);
+                        }
 
-                            String[] params = new String[]{tokens[3], tokens[4]};
-                            message = Auxiliary.addHeader("STORED", params);
+                        if (Integer.parseInt(tokens[2]) != Peer.senderId && tokens[0].equals("PUTCHUNK")) {
+                            File chunk = new File("peer" + Peer.senderId + "/backup/" + tokens[3] + "/chk" + tokens[4]);
 
-                            Random rand = new Random();
-                            int interval = rand.nextInt(401);
-                            try {
-                                Thread.sleep(interval);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                                System.exit(-1);
+                            if (!chunk.exists()) {
+                                createChunk(msg, tokens[3], tokens[4]);
+
+                                String[] params = new String[]{tokens[3], tokens[4]};
+                                message = Auxiliary.addHeader("STORED", params);
+
+                                Random rand = new Random();
+                                int interval = rand.nextInt(401);
+                                try {
+                                    Thread.sleep(interval);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                    System.exit(-1);
+                                }
+
+                                sendPacket(Mc.socket, message, Mc.address, Mc.port);
                             }
-
-                            sendPacket(Mc.socket, message, Mc.address, Mc.port);
                         }
                     }
                 }

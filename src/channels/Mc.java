@@ -1,9 +1,6 @@
 package channels;
 
-import code.Key;
-import code.Auxiliary;
-import code.Peer;
-import code.StoreRequest;
+import code.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,7 +34,7 @@ public class Mc extends Channel{
 
         while (rd < 10) {
 
-            File file = new File("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_" + rd);
+            File file = new File("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
 
             if (file.isFile())
                 break;
@@ -49,7 +46,7 @@ public class Mc extends Channel{
             return null;
 
         try {
-            inputStream = new FileInputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo + "_" + rd);
+            inputStream = new FileInputStream("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
 
             while ((bytesRead = inputStream.read(buf)) > 0)
                 trimmedBuf = Arrays.copyOf(buf, bytesRead);
@@ -75,22 +72,25 @@ public class Mc extends Channel{
                 if (message != null) {
                     String[] tokens = message.split(" ");
                     if(tokens[0].equals("STORED")){
-                        int rd = 0;
                         Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
                         if(Peer.rds.containsKey(key))
-                            rd = Peer.rds.get(key);
-                        rd++;
-                        Peer.rds.put(key, rd);
+                            Peer.rds.get(key).increment();
+                        else {
+                            Value value = new Value(1, 0);
+                            Peer.rds.put(key, value);
+                        }
                     }
                     if (Integer.parseInt(tokens[2]) != Peer.senderId)
                         switch (tokens[0]) {
                             case "REMOVED":
                                 Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
-                                Integer rd = Peer.rds.get(key);
+                                if(Peer.rds.containsKey(key))
+                                    Peer.rds.get(key).decrement();
+                                /*
                                 if(rd != null){
                                     rd--;
                                     Peer.rds.put(key, rd);
-                                    /*
+
                                     if(rd < )
                                     rand = new Random();
                                     interval = rand.nextInt(401);
@@ -100,9 +100,9 @@ public class Mc extends Channel{
                                         e.printStackTrace();
                                         System.exit(-1);
                                     }
-                                    */
-                                }
 
+                                }
+                                */
                                 break;
                             case "STORED":
                                 StoreRequest req = Peer.requests.get(tokens[3]);

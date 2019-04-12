@@ -21,7 +21,7 @@ public class Peer implements PeerInterface{
     public static ScheduledExecutorService executor;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
-    public static HashMap<Key, Integer> rds = new HashMap<>();
+    public static HashMap<Key, Value> rds = new HashMap<>();
 
     private static void setupThread(Thread th) {
         try {
@@ -45,7 +45,8 @@ public class Peer implements PeerInterface{
                     while ((line = br.readLine()) != null) {
                         String[] tokens = line.split(" ");
                         Key key = new Key(tokens[0], Integer.parseInt(tokens[1]));
-                        rds.put(key, Integer.parseInt(tokens[2]));
+                        Value value = new Value(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]));
+                        rds.put(key, value);
                     }
                     br.close();
                     fr.close();
@@ -74,9 +75,9 @@ public class Peer implements PeerInterface{
             System.exit(-1);
         }
 
-        for(Map.Entry<Key, Integer> entry : rds.entrySet()) {
+        for(Map.Entry<Key, Value> entry : rds.entrySet()) {
             Key key = entry.getKey();
-            Integer value = entry.getValue();
+            Value value = entry.getValue();
 
             out.println(key + " " + value);
         }
@@ -110,7 +111,10 @@ public class Peer implements PeerInterface{
 
     @Override
     public void reclaim(int maximum_space) throws RemoteException {
-
+        /*
+        ReclaimNotice nt = new ReclaimNotice(file_path, 1);
+        executor.schedule(nt, 0, TimeUnit.SECONDS);
+        */
     }
 
     @Override
@@ -136,17 +140,17 @@ public class Peer implements PeerInterface{
 
         accessPoint = "peer" + senderId;
 
+        /*
         try {
             Peer obj = new Peer();
             PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(obj, 0);
             Registry registry = LocateRegistry.getRegistry();
             registry.bind(accessPoint, stub);
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
         }
+        */
 
         loadRds();
 
@@ -173,33 +177,34 @@ public class Peer implements PeerInterface{
             int rd;
             String file_path;
             if(senderId == 1){
-                rd = 2;
-                file_path = "rsc/image2.jpg";
+                rd = 1;
+                file_path = "rsc/image.jpg";
             } else {
-                rd = 2;
+                rd = 1;
                 file_path = "rsc/image3.jpg";
             }
 
-            /*StoreRequest req = new StoreRequest(executor, file_path, rd);
-            executor.schedule(req, 0, TimeUnit.SECONDS);*/
+            StoreRequest req = new StoreRequest(executor, file_path, rd);
+            executor.schedule(req, 0, TimeUnit.SECONDS);
+            /*
+            DeleteRequest req = new DeleteRequest(executor, file_path);
+            executor.schedule(req, 0, TimeUnit.SECONDS);
 
-            /*DeleteRequest req = new DeleteRequest(executor, file_path);
-            executor.schedule(req, 0, TimeUnit.SECONDS);*/
+            RestoreRequest req = new RestoreRequest(executor, file_path);
+            executor.schedule(req, 0, TimeUnit.SECONDS);
 
-            /*RestoreRequest req = new RestoreRequest(executor, file_path);
-            executor.schedule(req, 0, TimeUnit.SECONDS);*/
-
-            /*ReclaimNotice nt = new ReclaimNotice(file_path, 1);
-            executor.schedule(nt, 0, TimeUnit.SECONDS);*/
-
-            try {
-                executor.awaitTermination(1, TimeUnit.DAYS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                System.exit(-1);
-            }
-            executor.shutdown();
+            ReclaimNotice nt = new ReclaimNotice(file_path, 1);
+            executor.schedule(nt, 0, TimeUnit.SECONDS);
+            */
         }
+
+        try {
+            executor.awaitTermination(1, TimeUnit.DAYS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+        executor.shutdown();
     }
 }
 

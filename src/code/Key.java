@@ -2,9 +2,9 @@ package code;
 
 public class Key {
     private final String file;
-    private final int chunk;
+    private final Integer chunk;
 
-    public Key(String file, int chunk) {
+    public Key(String file, Integer chunk) {
         this.file = file;
         this.chunk = chunk;
     }

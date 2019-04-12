@@ -45,9 +45,10 @@ public class StoreRequest implements Runnable {
             while ((bytesRead = inputStream.read(buf)) > 0) {
                 byte[] trimmedBuf  = Arrays.copyOf(buf, bytesRead);
 
-                Integer stores = Peer.rds.get(new Key(fileId, chunkNo));
-                if(stores == null)
-                    stores = 0;
+                int stores = 0;
+                Value value = Peer.rds.get(new Key(fileId, chunkNo));
+                if(value != null)
+                    stores = value.stores;
                 Chunk chunk = new Chunk(chunkNo, this.fileId, trimmedBuf, rd, executor, stores);
                 this.chunks.add(chunk);
 
@@ -56,9 +57,10 @@ public class StoreRequest implements Runnable {
 
             if(file.length() % maxChunkSize == 0)
             {
-                Integer stores = Peer.rds.get(new Key(fileId, chunkNo));
-                if(stores == null)
-                    stores = 0;
+                int stores = 0;
+                Value value = Peer.rds.get(new Key(fileId, chunkNo));
+                if(value != null)
+                    stores = value.stores;
                 Chunk chunk = new Chunk(chunkNo, this.fileId, null, rd, executor, stores);
                 this.chunks.add(chunk);
             }

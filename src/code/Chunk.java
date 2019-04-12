@@ -32,13 +32,11 @@ public class Chunk implements Runnable{
         int messageSize;
         byte [] headerBytes, message;
 
-        System.out.println(stores);
-
         if (stores < rd) {
             String header;
             String [] params;
 
-            System.out.println("send " + sends + " of #" + chunkNo);
+            System.out.println("send " + sends + " of #" + chunkNo + " with stores=" + stores);
             params = new String[]{String.valueOf(fileId), String.valueOf(chunkNo), String.valueOf(rd)};
             header = Auxiliary.addHeader("PUTCHUNK", params);
 

@@ -13,16 +13,16 @@ public class ReclaimNotice implements Runnable {
         this.fileId = Auxiliary.encodeFileId(new File(fp));
         this.chunkNo = chunkNo;
 
-        File chunk = new File("peer" + Peer.senderId + "/backup/" + fileId);
+        File chunk = new File("peer" + Peer.senderId + "/backup/" + fileId + "/chk" + chunkNo);
         if(!chunk.delete()){
             System.out.println("Error deleting file");
             System.exit(-1);
         }
 
         Key key = new Key(fileId, chunkNo);
-        int rd = Peer.rds.get(key);
-        rd--;
-        Peer.rds.put(key, rd);
+        Value value = Peer.rds.get(key);
+        value.decrement();
+        Peer.rds.put(key, value);
     }
 
     @Override
