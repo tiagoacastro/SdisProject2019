@@ -23,8 +23,6 @@ public class StoreRequest implements Runnable {
         this.fileId = Auxiliary.encodeFileId(file);
         Peer.requests.put(this.fileId, this);
         Peer.sent.add(fileId);
-
-        splitIntoChunks();
     }
 
     public void store(int chunkNo) {
@@ -81,6 +79,8 @@ public class StoreRequest implements Runnable {
 
     @Override
     public void run() {
+        splitIntoChunks();
+
         for(Chunk c : chunks)
             executor.schedule(c, 0, TimeUnit.SECONDS);
     }
