@@ -27,6 +27,8 @@ public class Chunk implements Runnable{
 
     public void store() { stores++; }
 
+    public int getChunkNo() {return this.chunkNo;}
+
     @Override
     public void run(){
         int messageSize;

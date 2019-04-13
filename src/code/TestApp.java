@@ -106,7 +106,8 @@ public class TestApp {
                 }
 
                 try {
-                    pi.state();
+                    String message = pi.state();
+                    System.out.print(message);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                     System.exit(-1);

@@ -165,8 +165,48 @@ public class Peer implements PeerInterface{
     }
 
     @Override
-    public void state() throws RemoteException {
+    public String state() throws RemoteException {
+        String message = "Backups initiated\n\n";
+        int i = 0;
 
+        for(Map.Entry<String, StoreRequest> entry : requests.entrySet()) {
+            String fileId = entry.getKey();
+            StoreRequest request = entry.getValue();
+            message += "Backup #" + i + "\n\n" +
+                       "File path: " + request.getFile_path() + "\n" +
+                       "File id: " + fileId + "\n" +
+                       "Desired replication degree: " + request.getRd() + "\n";
+
+            for(Chunk c: request.getChunks())
+            {
+                message += "Chunk id: chk_" + c.getChunkNo() + "\n";
+                //Its perceived replication degree
+                message += "Perceived replication degree: " + "Hardcoded" + "\n";
+            }
+
+            message += "\n";
+            i++;
+        }
+
+        message = "Stored Files\n\n";
+
+        File directory = new File("peer" + senderId + "/backup");
+        File[] directoryListing = directory.listFiles();
+        if (directoryListing != null) {
+            for (File fileDirectory : directoryListing) {
+                File[] chunks = fileDirectory.listFiles();
+                message += "Fileid: " + fileDirectory.getName() + "\n\n";
+                for (File chunk : chunks) {
+                    String chunkId = chunk.getName();
+                    message += "Chunk id: " + chunk.getName() + "\n";
+                    message += "Chunk size: " + chunk.length() + " bytes\n";
+                    //Its perceived replication degree
+                    message += "Perceived replication degree: " + "Hardcoded" + "\n\n";
+                }
+            }
+        }
+
+        return message;
     }
 
     private static class Hook extends Thread{
@@ -178,40 +218,38 @@ public class Peer implements PeerInterface{
     }
 
     public static void main(String[] args) {
-        if(args.length != 8)
+        if(args.length != 9)
             return;
 
         Runtime.getRuntime().addShutdownHook(new Hook());
 
         version = args[0];
         senderId = Integer.parseInt(args[1]);
-
-        String accessPoint = "peer" + senderId;
-
+        String accessPoint = args[2];
         /*
         try {
             Peer obj = new Peer();
             PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(obj, 0);
             Registry registry = LocateRegistry.getRegistry();
-            registry.bind(accessPoint, stub);
+            registry.rebind(accessPoint, stub);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
         }
         */
-
+        
         loadSpace();
 
         loadRds();
 
-        String mdbAddr = args[2];
-        int mdbPort = Integer.parseInt(args[3]);
+        String mdbAddr = args[3];
+        int mdbPort = Integer.parseInt(args[4]);
 
-        String mcAddr = args[4];
-        int mcPort = Integer.parseInt(args[5]);
+        String mcAddr = args[5];
+        int mcPort = Integer.parseInt(args[6]);
 
-        String mdrAddr = args[6];
-        int mdrPort = Integer.parseInt(args[7]);
+        String mdrAddr = args[7];
+        int mdrPort = Integer.parseInt(args[8]);
 
         Thread mdb = new Thread(new Mdb(mdbAddr, mdbPort));
         Thread mc = new Thread(new Mc(mcAddr, mcPort));
@@ -234,8 +272,8 @@ public class Peer implements PeerInterface{
                 file_path = "rsc/image3.jpg";
             }
 
-            StoreRequest req = new StoreRequest(executor, file_path, rd);
-            executor.schedule(req, 0, TimeUnit.SECONDS);
+            /*StoreRequest req = new StoreRequest(executor, file_path, rd);
+            executor.schedule(req, 0, TimeUnit.SECONDS);*/
             /*
             DeleteRequest req = new DeleteRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);
