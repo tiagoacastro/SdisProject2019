@@ -175,20 +175,21 @@ public class Peer implements PeerInterface{
             message += "Backup #" + i + "\n\n" +
                        "File path: " + request.getFile_path() + "\n" +
                        "File id: " + fileId + "\n" +
-                       "Desired replication degree: " + request.getRd() + "\n";
+                       "Desired replication degree: " + request.getRd() + "\n\n";
 
             for(Chunk c: request.getChunks())
             {
                 message += "Chunk id: chk_" + c.getChunkNo() + "\n";
-                //Its perceived replication degree
-                message += "Perceived replication degree: " + "Hardcoded" + "\n";
+                Value value = this.rds.get(new Key(fileId, c.getChunkNo()));
+                int stores = value.getStores();
+                message += "Perceived replication degree: " + stores + "\n\n";
             }
 
             message += "\n";
             i++;
         }
 
-        message = "Stored Files\n\n";
+        message += "Stored Files\n\n";
 
         File directory = new File("peer" + senderId + "/backup");
         File[] directoryListing = directory.listFiles();
@@ -200,9 +201,9 @@ public class Peer implements PeerInterface{
                     String chunkId = chunk.getName();
                     message += "Chunk id: " + chunk.getName() + "\n";
                     message += "Chunk size: " + chunk.length() + " bytes\n";
-                    //Its perceived replication degree
-                    message += "Perceived replication degree: " + "Hardcoded" + "\n\n";
-                }
+                    Value value = this.rds.get(new Key(fileDirectory.getName(), Integer.parseInt(chunk.getName().substring(3))));
+                    int stores = value.getStores();
+                    message += "Perceived replication degree: " + stores + "\n\n";                }
             }
         }
 
