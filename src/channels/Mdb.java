@@ -99,6 +99,7 @@ public class Mdb extends Channel{
                                 createChunk(content, tokens[3], tokens[4]);
 
                                 String[] params = new String[]{tokens[3], tokens[4]};
+                                System.out.println("sending STORE for " + tokens[3] + " #" + tokens[4]);
                                 message = Auxiliary.addHeader("STORED", params);
 
                                 Random rand = new Random();

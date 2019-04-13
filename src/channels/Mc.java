@@ -76,17 +76,17 @@ public class Mc extends Channel{
 
                 if (message != null) {
                     String[] tokens = message.split(" ");
-                    Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
-                    if (Integer.parseInt(tokens[2]) != Peer.senderId)
+                    if (Integer.parseInt(tokens[2]) != Peer.senderId) {
+                        Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
                         switch (tokens[0]) {
                             case "REMOVED":
-                                if(Peer.stores.containsKey(key)){
+                                if (Peer.stores.containsKey(key)) {
                                     Value value = Peer.stores.get(key);
                                     value.decrement();
                                     Integer rd = Peer.rds.get(tokens[3]);
-                                    if(value.stores < rd){
+                                    if (value.stores < rd) {
                                         byte[] body;
-                                        if((body = retrieveChunk(tokens[3], tokens[4])) != null) {
+                                        if ((body = retrieveChunk(tokens[3], tokens[4])) != null) {
                                             rand = new Random();
                                             interval = rand.nextInt(401);
 
@@ -99,7 +99,7 @@ public class Mc extends Channel{
                                                 System.exit(-1);
                                             }
 
-                                            if (!putChunksReceived.contains(new Key(tokens[3], Integer.parseInt(tokens[4])))) {
+                                            if (!putChunksReceived.contains(key)) {
                                                 String header;
                                                 int messageSize;
                                                 byte[] headerBytes, putChunkMessage;
@@ -121,9 +121,9 @@ public class Mc extends Channel{
                                 break;
                             case "STORED":
                                 StoreRequest req = Peer.requests.get(tokens[3]);
-                                if(req != null)
+                                if (req != null)
                                     req.store(Integer.parseInt(tokens[4]));
-                                if(Peer.stores.containsKey(key))
+                                if (Peer.stores.containsKey(key))
                                     Peer.stores.get(key).increment();
                                 else {
                                     Value value = new Value(1);
@@ -133,18 +133,17 @@ public class Mc extends Channel{
                             case "DELETE":
                                 File directory = new File("peer" + Peer.senderId + "/backup/" + tokens[3]);
                                 Auxiliary.clearDirectory(directory);
-                                for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
+                                for (Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
                                     Key k = entry.getKey();
 
-                                    if(k.file.equals(tokens[3]))
+                                    if (k.file.equals(tokens[3]))
                                         entry.getValue().stores = 0;
                                 }
                                 break;
                             case "GETCHUNK":
                                 byte[] body;
 
-                                if((body = retrieveChunk(tokens[3], tokens[4])) != null)
-                                {
+                                if ((body = retrieveChunk(tokens[3], tokens[4])) != null) {
                                     rand = new Random();
                                     interval = rand.nextInt(401);
 
@@ -157,11 +156,12 @@ public class Mc extends Channel{
                                         System.exit(-1);
                                     }
 
-                                    if(!chunksReceived.contains(new Key(tokens[3], Integer.parseInt(tokens[4])))){
+                                    if (!chunksReceived.contains(key)) {
                                         String header;
                                         int messageSize;
                                         byte[] headerBytes, getChunkMessage;
                                         String[] params = new String[]{tokens[3], tokens[4]};
+                                        System.out.println("sending CHUNK for " + tokens[3] + " #" + tokens[4]);
                                         header = Auxiliary.addHeader("CHUNK", params);
                                         headerBytes = header.getBytes();
                                         messageSize = headerBytes.length + body.length;
@@ -177,6 +177,7 @@ public class Mc extends Channel{
                                 }
                                 break;
                         }
+                    }
                 }
             }
         }
