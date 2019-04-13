@@ -37,6 +37,7 @@ public class ReclaimRequest implements Runnable{
                 System.exit(-1);
             }
         } else{
+            boolean next = true;
             for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
                 Value value = entry.getValue();
                 Key key = entry.getKey();
@@ -45,34 +46,41 @@ public class ReclaimRequest implements Runnable{
                     RemovedNotice not = new RemovedNotice(key.file,key.chunk);
                     executor.schedule(not , 0, TimeUnit.SECONDS);
 
-                    if(Peer.getUsedSpace() <= Peer.allowedSpace)
-                        return;
+                    if(Peer.getUsedSpace() <= Peer.allowedSpace){
+                        next = false;
+                        break;
+                    }
                 }
             }
-            for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
-                Value value = entry.getValue();
+            if(next){
+                for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
+                    Value value = entry.getValue();
 
-                if(value.stores > 1){
-                    Key key = entry.getKey();
+                    if(value.stores > 1){
+                        Key key = entry.getKey();
 
-                    RemovedNotice not = new RemovedNotice(key.file,key.chunk);
-                    executor.schedule(not , 0, TimeUnit.SECONDS);
+                        RemovedNotice not = new RemovedNotice(key.file,key.chunk);
+                        executor.schedule(not , 0, TimeUnit.SECONDS);
 
-                    if(Peer.getUsedSpace() <= Peer.allowedSpace)
-                        return;
+                        if(Peer.getUsedSpace() <= Peer.allowedSpace){
+                            next = false;
+                            break;
+                        }
+                    }
                 }
-            }
-            for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
-                Value value = entry.getValue();
+                if(next)
+                    for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
+                        Value value = entry.getValue();
 
-                if(value.stores != 0) {
-                    Key key = entry.getKey();
-                    RemovedNotice not = new RemovedNotice(key.file, key.chunk);
-                    executor.schedule(not, 0, TimeUnit.SECONDS);
+                        if(value.stores != 0) {
+                            Key key = entry.getKey();
+                            RemovedNotice not = new RemovedNotice(key.file, key.chunk);
+                            executor.schedule(not, 0, TimeUnit.SECONDS);
 
-                    if (Peer.getUsedSpace() <= Peer.allowedSpace)
-                        return;
-                }
+                            if (Peer.getUsedSpace() <= Peer.allowedSpace)
+                                break;
+                        }
+                    }
             }
         }
 
