@@ -19,10 +19,10 @@ public class RemovedNotice implements Runnable {
             System.exit(-1);
         }
 
+        System.out.println("Deleted file " + fp + " #" + chunkNo + " - Used Space: " + Peer.getUsedSpace());
+
         Key key = new Key(fileId, chunkNo);
-        Value value = Peer.rds.get(key);
-        value.decrement();
-        Peer.rds.put(key, value);
+        Peer.stores.get(key).decrement();
     }
 
     @Override

@@ -74,23 +74,23 @@ public class Mc extends Channel{
 
                 if (message != null) {
                     String[] tokens = message.split(" ");
+                    Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
                     if(tokens[0].equals("STORED")){
-                        Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
-                        if(Peer.rds.containsKey(key))
-                            Peer.rds.get(key).increment();
+                        if(Peer.stores.containsKey(key))
+                            Peer.stores.get(key).increment();
                         else {
-                            Value value = new Value(1, 0);
-                            Peer.rds.put(key, value);
+                            Value value = new Value(1);
+                            Peer.stores.put(key, value);
                         }
                     }
                     if (Integer.parseInt(tokens[2]) != Peer.senderId)
                         switch (tokens[0]) {
                             case "REMOVED":
-                                Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
-                                if(Peer.rds.containsKey(key)){
-                                    Value value = Peer.rds.get(key);
+                                if(Peer.stores.containsKey(key)){
+                                    Value value = Peer.stores.get(key);
                                     value.decrement();
-                                    if(value.stores < value.rd){
+                                    Integer rd = Peer.rds.get(tokens[3]);
+                                    if(value.stores < rd){
                                         byte[] body;
                                         if((body = retrieveChunk(tokens[3], tokens[4])) != null) {
                                             rand = new Random();
@@ -109,7 +109,7 @@ public class Mc extends Channel{
                                                 String header;
                                                 int messageSize;
                                                 byte[] headerBytes, putChunkMessage;
-                                                String[] params = new String[]{tokens[3], tokens[4], Integer.toString(value.rd)};
+                                                String[] params = new String[]{tokens[3], tokens[4], Integer.toString(rd)};
                                                 header = Auxiliary.addHeader("PUTCHUNK", params);
                                                 headerBytes = header.getBytes();
                                                 messageSize = headerBytes.length + body.length;

@@ -19,16 +19,16 @@ public class ReclaimRequest implements Runnable{
 
     @Override
     public void run() {
+        System.out.println("Used space: " + Peer.getUsedSpace());
         if(clean){
             File directory = new File("peer" + Peer.senderId + "/backup");
             Auxiliary.clearDirectory(directory);
         } else{
-            for(Map.Entry<Key, Value> entry : Peer.rds.entrySet()) {
+            for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
                 Value value = entry.getValue();
+                Key key = entry.getKey();
 
-                if(value.stores > value.rd){
-                    Key key = entry.getKey();
-
+                if(value.stores > Peer.rds.get(key.file)){
                     RemovedNotice not = new RemovedNotice(key.file,key.chunk);
                     executor.schedule(not , 0, TimeUnit.SECONDS);
 
@@ -36,7 +36,7 @@ public class ReclaimRequest implements Runnable{
                         return;
                 }
             }
-            for(Map.Entry<Key, Value> entry : Peer.rds.entrySet()) {
+            for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
                 Value value = entry.getValue();
 
                 if(value.stores > 1){

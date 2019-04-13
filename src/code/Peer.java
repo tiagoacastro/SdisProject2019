@@ -20,7 +20,8 @@ public class Peer implements PeerInterface{
     private static ScheduledExecutorService executor;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
-    public static HashMap<Key, Value> rds = new HashMap<>();
+    public static HashMap<Key, Value> stores = new HashMap<>();
+    public static HashMap<String, Integer> rds = new HashMap<>();
     public static long allowedSpace = 100000000;
 
     private static void setupThread(Thread th) {
@@ -44,9 +45,32 @@ public class Peer implements PeerInterface{
                     String line;
                     while ((line = br.readLine()) != null) {
                         String[] tokens = line.split(" ");
+                        rds.put(tokens[0], Integer.parseInt(tokens[1]));
+                    }
+                    br.close();
+                    fr.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+            }
+        }
+    }
+
+    private static void loadStores(){
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (directoryPeer.exists()){
+            File file = new File("peer" + Peer.senderId + "/stores.txt");
+            if(file.exists()){
+                try {
+                    FileReader fr = new FileReader("peer" + Peer.senderId + "/stores.txt");
+                    BufferedReader br = new BufferedReader(fr);
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        String[] tokens = line.split(" ");
                         Key key = new Key(tokens[0], Integer.parseInt(tokens[1]));
-                        Value value = new Value(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]));
-                        rds.put(key, value);
+                        Value value = new Value(Integer.parseInt(tokens[2]));
+                        stores.put(key, value);
                     }
                     br.close();
                     fr.close();
@@ -94,7 +118,33 @@ public class Peer implements PeerInterface{
             System.exit(-1);
         }
 
-        for(Map.Entry<Key, Value> entry : rds.entrySet()) {
+        for(Map.Entry<String, Integer> entry : rds.entrySet()) {
+            String key = entry.getKey();
+            Integer value = entry.getValue();
+            out.println(key + " " + value);
+        }
+
+        closeOutputStreams(fs, out);
+    }
+
+    private static void saveStores(){
+        FileOutputStream fs = null;
+        PrintWriter out = null;
+
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (!directoryPeer.exists())
+            if(!directoryPeer.mkdir())
+                return;
+
+        try {
+            fs = new FileOutputStream("peer" + Peer.senderId + "/stores.txt");
+            out = new PrintWriter(fs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
+        for(Map.Entry<Key, Value> entry : stores.entrySet()) {
             Key key = entry.getKey();
             Value value = entry.getValue();
             out.println(key + " " + value);
@@ -179,9 +229,7 @@ public class Peer implements PeerInterface{
             for(Chunk c: request.getChunks())
             {
                 message += "Chunk id: chk_" + c.getChunkNo() + "\n";
-                Value value = this.rds.get(new Key(fileId, c.getChunkNo()));
-                int stores = value.stores;
-                message += "Perceived replication degree: " + stores + "\n\n";
+                message += "Perceived replication degree: " + Peer.stores.get(new Key(fileId, c.getChunkNo())) + "\n\n";
             }
 
             message += "\n";
@@ -200,9 +248,7 @@ public class Peer implements PeerInterface{
                     String chunkId = chunk.getName();
                     message += "Chunk id: " + chunk.getName() + "\n";
                     message += "Chunk size: " + chunk.length() + " bytes\n";
-                    Value value = this.rds.get(new Key(fileDirectory.getName(), Integer.parseInt(chunk.getName().substring(3))));
-                    int stores = value.stores;
-                    message += "Perceived replication degree: " + stores + "\n\n";                }
+                    message += "Perceived replication degree: " + Peer.stores.get(new Key(fileDirectory.getName(), Integer.parseInt(chunk.getName().substring(3)))) + "\n\n";                }
             }
         }
 
@@ -214,6 +260,7 @@ public class Peer implements PeerInterface{
         public void run() {
             saveSpace();
             saveRds();
+            saveStores();
         }
     }
 
@@ -239,8 +286,8 @@ public class Peer implements PeerInterface{
         */
         
         loadSpace();
-
         loadRds();
+        loadStores();
 
         String mdbAddr = args[3];
         int mdbPort = Integer.parseInt(args[4]);
@@ -272,9 +319,9 @@ public class Peer implements PeerInterface{
                 file_path = "rsc/image3.jpg";
             }
 
-            /*StoreRequest req = new StoreRequest(executor, file_path, rd);
+            StoreRequest req = new StoreRequest(executor, file_path, rd);
             executor.schedule(req, 0, TimeUnit.SECONDS);
-
+            /*
             DeleteRequest req = new DeleteRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 

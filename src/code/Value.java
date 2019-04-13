@@ -2,16 +2,14 @@ package code;
 
 public class Value {
     public Integer stores;
-    public Integer rd;
 
-    public Value(Integer stores, Integer rd) {
+    public Value(Integer stores) {
         this.stores = stores;
-        this.rd = rd;
     }
 
     @Override
     public String toString(){
-        return stores + " " + rd;
+        return Integer.toString(stores);
     }
 
     public void increment(){

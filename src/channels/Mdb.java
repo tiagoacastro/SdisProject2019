@@ -86,14 +86,8 @@ public class Mdb extends Channel{
                     byte[] content = getContent(msg);
 
                     if (tokens[0].equals("PUTCHUNK") ) {
-                        Value value;
-                        Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
-                        if (Peer.rds.containsKey(key))
-                            Peer.rds.get(key).rd = Integer.parseInt(tokens[5]);
-                        else {
-                            value = new Value(0, Integer.parseInt(tokens[5]));
-                            Peer.rds.put(key, value);
-                        }
+                        if (!Peer.rds.containsKey(tokens[3]))
+                            Peer.rds.put(tokens[3], Integer.parseInt(tokens[5]));
 
                         if (Integer.parseInt(tokens[2]) != Peer.senderId) {
                             Mc.addPutChunk(new Key(tokens[3], Integer.parseInt(tokens[4])));
