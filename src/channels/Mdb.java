@@ -90,7 +90,8 @@ public class Mdb extends Channel{
                             Peer.rds.put(tokens[3], Integer.parseInt(tokens[5]));
 
                         if (Integer.parseInt(tokens[2]) != Peer.senderId) {
-                            Mc.addPutChunk(new Key(tokens[3], Integer.parseInt(tokens[4])));
+                            Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
+                            Mc.addPutChunk(key);
 
                             File chunk = new File("peer" + Peer.senderId + "/backup/" + tokens[3] + "/chk" + tokens[4]);
 
@@ -107,6 +108,13 @@ public class Mdb extends Channel{
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                     System.exit(-1);
+                                }
+
+                                if(Peer.stores.containsKey(key))
+                                    Peer.stores.get(key).increment();
+                                else {
+                                    Value value = new Value(1);
+                                    Peer.stores.put(key, value);
                                 }
 
                                 sendPacket(Mc.socket, message, Mc.address, Mc.port);

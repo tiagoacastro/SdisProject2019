@@ -77,14 +77,6 @@ public class Mc extends Channel{
                 if (message != null) {
                     String[] tokens = message.split(" ");
                     Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
-                    if(tokens[0].equals("STORED")){
-                        if(Peer.stores.containsKey(key))
-                            Peer.stores.get(key).increment();
-                        else {
-                            Value value = new Value(1);
-                            Peer.stores.put(key, value);
-                        }
-                    }
                     if (Integer.parseInt(tokens[2]) != Peer.senderId)
                         switch (tokens[0]) {
                             case "REMOVED":
@@ -131,6 +123,12 @@ public class Mc extends Channel{
                                 StoreRequest req = Peer.requests.get(tokens[3]);
                                 if(req != null)
                                     req.store(Integer.parseInt(tokens[4]));
+                                if(Peer.stores.containsKey(key))
+                                    Peer.stores.get(key).increment();
+                                else {
+                                    Value value = new Value(1);
+                                    Peer.stores.put(key, value);
+                                }
                                 break;
                             case "DELETE":
                                 File directory = new File("peer" + Peer.senderId + "/backup/" + tokens[3]);

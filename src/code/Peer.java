@@ -307,12 +307,12 @@ public class Peer implements PeerInterface{
         setupThread(mdr);
 
         executor = Executors.newScheduledThreadPool(20);
-        /*
+
         if (senderId == 1 || senderId == 5) {
             int rd;
             String file_path;
             if(senderId == 1){
-                rd = 2;
+                rd = 1;
                 file_path = "rsc/image.jpg";
             } else {
                 rd = 2;
@@ -321,7 +321,7 @@ public class Peer implements PeerInterface{
 
             StoreRequest req = new StoreRequest(executor, file_path, rd);
             executor.schedule(req, 0, TimeUnit.SECONDS);
-
+/*
             DeleteRequest req = new DeleteRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
@@ -330,16 +330,15 @@ public class Peer implements PeerInterface{
 
             ReclaimRequest req = new ReclaimRequest(executor, 400000);
             executor.schedule(req, 0, TimeUnit.SECONDS);
-
+*/
         }
-        */
 
+/*
         if(senderId == 2){
             ReclaimRequest req = new ReclaimRequest(executor, 0);
             executor.schedule(req, 0, TimeUnit.SECONDS);
         }
-
-
+*/
         try {
             executor.awaitTermination(1, TimeUnit.DAYS);
         } catch (InterruptedException e) {
