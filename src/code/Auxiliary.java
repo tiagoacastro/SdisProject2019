@@ -70,4 +70,17 @@ public class Auxiliary {
             }
         }
     }
+
+    public static long getDirectorySize(File folder) {
+        long length = 0;
+        File[] files = folder.listFiles();
+        if(files != null)
+            for (File file : files) {
+                if (file.isFile())
+                    length += file.length();
+                else
+                    length += getDirectorySize(file);
+            }
+        return length;
+    }
 }

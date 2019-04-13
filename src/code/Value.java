@@ -9,10 +9,6 @@ public class Value {
         this.rd = rd;
     }
 
-    public Integer getRd(){return rd;}
-
-    public Integer getStores(){return stores;}
-
     @Override
     public String toString(){
         return stores + " " + rd;

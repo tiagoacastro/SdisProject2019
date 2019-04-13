@@ -100,10 +100,8 @@ public class Mdb extends Channel{
 
                             File chunk = new File("peer" + Peer.senderId + "/backup/" + tokens[3] + "/chk" + tokens[4]);
 
-                            if (!chunk.exists() && Peer.usedSpace + content.length <= Peer.allowedSpace) {
+                            if (!chunk.exists() && Peer.getUsedSpace() + content.length <= Peer.allowedSpace) {
                                 createChunk(content, tokens[3], tokens[4]);
-
-                                Peer.usedSpace += chunk.length();
 
                                 String[] params = new String[]{tokens[3], tokens[4]};
                                 message = Auxiliary.addHeader("STORED", params);

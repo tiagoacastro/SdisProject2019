@@ -22,7 +22,6 @@ public class Peer implements PeerInterface{
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Value> rds = new HashMap<>();
     public static long allowedSpace = 100000000;
-    public static long usedSpace = 0;
 
     private static void setupThread(Thread th) {
         try {
@@ -68,7 +67,6 @@ public class Peer implements PeerInterface{
                     FileReader fr = new FileReader("peer" + Peer.senderId + "/rds.txt");
                     BufferedReader br = new BufferedReader(fr);
                     allowedSpace = Long.parseLong(br.readLine());
-                    usedSpace = Long.parseLong(br.readLine());
                     br.close();
                     fr.close();
                 } catch (Exception e) {
@@ -123,7 +121,6 @@ public class Peer implements PeerInterface{
         }
 
         out.println(allowedSpace);
-        out.println(usedSpace);
 
         closeOutputStreams(fs, out);
     }
@@ -136,6 +133,10 @@ public class Peer implements PeerInterface{
             e.printStackTrace();
             System.exit(-1);
         }
+    }
+
+    public static long getUsedSpace(){
+        return Auxiliary.getDirectorySize(new File("peer" + Peer.senderId + "/backup"));
     }
 
     @Override
@@ -158,10 +159,8 @@ public class Peer implements PeerInterface{
 
     @Override
     public void reclaim(long maximum_space) throws RemoteException {
-        /*
-        RemovedNotice nt = new RemovedNotice(file_path, 1);
-        executor.schedule(nt, 0, TimeUnit.SECONDS);
-        */
+        ReclaimRequest req = new ReclaimRequest(executor, maximum_space);
+        executor.schedule(req, 0, TimeUnit.SECONDS);
     }
 
     @Override
@@ -181,7 +180,7 @@ public class Peer implements PeerInterface{
             {
                 message += "Chunk id: chk_" + c.getChunkNo() + "\n";
                 Value value = this.rds.get(new Key(fileId, c.getChunkNo()));
-                int stores = value.getStores();
+                int stores = value.stores;
                 message += "Perceived replication degree: " + stores + "\n\n";
             }
 
@@ -202,7 +201,7 @@ public class Peer implements PeerInterface{
                     message += "Chunk id: " + chunk.getName() + "\n";
                     message += "Chunk size: " + chunk.length() + " bytes\n";
                     Value value = this.rds.get(new Key(fileDirectory.getName(), Integer.parseInt(chunk.getName().substring(3))));
-                    int stores = value.getStores();
+                    int stores = value.stores;
                     message += "Perceived replication degree: " + stores + "\n\n";                }
             }
         }
@@ -274,16 +273,16 @@ public class Peer implements PeerInterface{
             }
 
             /*StoreRequest req = new StoreRequest(executor, file_path, rd);
-            executor.schedule(req, 0, TimeUnit.SECONDS);*/
-            /*
+            executor.schedule(req, 0, TimeUnit.SECONDS);
+
             DeleteRequest req = new DeleteRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
             RestoreRequest req = new RestoreRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
-            RemovedNotice nt = new RemovedNotice(file_path, 1);
-            executor.schedule(nt, 0, TimeUnit.SECONDS);
+            ReclaimRequest req = new ReclaimRequest(executor, 500);
+            executor.schedule(req, 0, TimeUnit.SECONDS);
             */
         }
 
