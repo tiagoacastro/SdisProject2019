@@ -31,7 +31,7 @@ public class ReclaimRequest implements Runnable{
                 }
             try {
                 if (!directory.delete())
-                    throw new Exception("couldn't delete directory");
+                    throw new Exception("couldn't delete backup directory");
             } catch(Exception e){
                 e.printStackTrace();
                 System.exit(-1);
@@ -63,13 +63,16 @@ public class ReclaimRequest implements Runnable{
                 }
             }
             for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
-                Key key = entry.getKey();
+                Value value = entry.getValue();
 
-                RemovedNotice not = new RemovedNotice(key.file,key.chunk);
-                executor.schedule(not , 0, TimeUnit.SECONDS);
+                if(value.stores != 0) {
+                    Key key = entry.getKey();
+                    RemovedNotice not = new RemovedNotice(key.file, key.chunk);
+                    executor.schedule(not, 0, TimeUnit.SECONDS);
 
-                if(Peer.getUsedSpace() <= Peer.allowedSpace)
-                    return;
+                    if (Peer.getUsedSpace() <= Peer.allowedSpace)
+                        return;
+                }
             }
         }
 

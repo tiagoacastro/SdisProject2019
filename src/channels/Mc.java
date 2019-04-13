@@ -8,7 +8,9 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class Mc extends Channel{
     public static InetAddress address;
@@ -132,6 +134,12 @@ public class Mc extends Channel{
                             case "DELETE":
                                 File directory = new File("peer" + Peer.senderId + "/backup/" + tokens[3]);
                                 Auxiliary.clearDirectory(directory);
+                                for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
+                                    Key k = entry.getKey();
+
+                                    if(k.file.equals(tokens[3]))
+                                        entry.getValue().stores = 0;
+                                }
                                 break;
                             case "GETCHUNK":
                                 byte[] body;
