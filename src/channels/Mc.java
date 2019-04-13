@@ -112,6 +112,7 @@ public class Mc extends Channel{
                                                 int messageSize;
                                                 byte[] headerBytes, putChunkMessage;
                                                 String[] params = new String[]{tokens[3], tokens[4], Integer.toString(rd)};
+                                                System.out.println("sending PUTCHUNK for " + tokens[3] + " #" + tokens[4]);
                                                 header = Auxiliary.addHeader("PUTCHUNK", params);
                                                 headerBytes = header.getBytes();
                                                 messageSize = headerBytes.length + body.length;

@@ -312,10 +312,10 @@ public class Peer implements PeerInterface{
             int rd;
             String file_path;
             if(senderId == 1){
-                rd = 1;
+                rd = 2;
                 file_path = "rsc/image.jpg";
             } else {
-                rd = 1;
+                rd = 2;
                 file_path = "rsc/image3.jpg";
             }
 
@@ -335,7 +335,7 @@ public class Peer implements PeerInterface{
         */
 
         if(senderId == 2){
-            ReclaimRequest req = new ReclaimRequest(executor, 250000);
+            ReclaimRequest req = new ReclaimRequest(executor, 0);
             executor.schedule(req, 0, TimeUnit.SECONDS);
         }
 
