@@ -89,7 +89,7 @@ public class Mdb extends Channel{
                         if (!Peer.rds.containsKey(tokens[3]))
                             Peer.rds.put(tokens[3], Integer.parseInt(tokens[5]));
 
-                        if (Integer.parseInt(tokens[2]) != Peer.senderId) {
+                        if (Integer.parseInt(tokens[2]) != Peer.senderId && !Peer.sent.contains(tokens[3])) {
                             Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
                             Mc.addPutChunk(key);
 

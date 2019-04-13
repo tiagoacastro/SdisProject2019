@@ -22,6 +22,7 @@ public class StoreRequest implements Runnable {
 
         this.fileId = Auxiliary.encodeFileId(file);
         Peer.requests.put(this.fileId, this);
+        Peer.sent.add(fileId);
 
         splitIntoChunks();
     }

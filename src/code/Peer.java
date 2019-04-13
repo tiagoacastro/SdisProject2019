@@ -22,6 +22,7 @@ public class Peer implements PeerInterface{
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Value> stores = new HashMap<>();
     public static HashMap<String, Integer> rds = new HashMap<>();
+    public static ArrayList<String> sent = new ArrayList<>();
     public static long allowedSpace = 100000000;
 
     private static void setupThread(Thread th) {
@@ -91,6 +92,27 @@ public class Peer implements PeerInterface{
                     FileReader fr = new FileReader("peer" + Peer.senderId + "/space.txt");
                     BufferedReader br = new BufferedReader(fr);
                     allowedSpace = Long.parseLong(br.readLine());
+                    br.close();
+                    fr.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+            }
+        }
+    }
+
+    private static void loadSent(){
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (directoryPeer.exists()){
+            File file = new File("peer" + Peer.senderId + "/sent.txt");
+            if(file.exists()){
+                try {
+                    FileReader fr = new FileReader("peer" + Peer.senderId + "/sent.txt");
+                    BufferedReader br = new BufferedReader(fr);
+                    String line;
+                    while ((line = br.readLine()) != null)
+                        sent.add(line);
                     br.close();
                     fr.close();
                 } catch (Exception e) {
@@ -171,6 +193,29 @@ public class Peer implements PeerInterface{
         }
 
         out.println(allowedSpace);
+
+        closeOutputStreams(fs, out);
+    }
+
+    private static void saveSent(){
+        FileOutputStream fs = null;
+        PrintWriter out = null;
+
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (!directoryPeer.exists())
+            if(!directoryPeer.mkdir())
+                return;
+
+        try {
+            fs = new FileOutputStream("peer" + Peer.senderId + "/sent.txt");
+            out = new PrintWriter(fs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
+        for (String file : sent)
+            out.println(file);
 
         closeOutputStreams(fs, out);
     }
@@ -261,6 +306,7 @@ public class Peer implements PeerInterface{
             saveSpace();
             saveRds();
             saveStores();
+            saveSent();
         }
     }
 
@@ -287,6 +333,7 @@ public class Peer implements PeerInterface{
         loadSpace();
         loadRds();
         loadStores();
+        loadSent();
 
         String mdbAddr = args[3];
         int mdbPort = Integer.parseInt(args[4]);
