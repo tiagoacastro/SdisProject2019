@@ -62,7 +62,7 @@ public class Auxiliary {
                             throw new Exception("couldn't delete file");
                     }
                     if (!directory.delete())
-                        throw new Exception("couldn't delete file");
+                        throw new Exception("couldn't delete directory");
                 }
             } catch(Exception e){
                 e.printStackTrace();

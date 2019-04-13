@@ -88,7 +88,7 @@ public class Peer implements PeerInterface{
             File file = new File("peer" + Peer.senderId + "/space.txt");
             if(file.exists()){
                 try {
-                    FileReader fr = new FileReader("peer" + Peer.senderId + "/rds.txt");
+                    FileReader fr = new FileReader("peer" + Peer.senderId + "/space.txt");
                     BufferedReader br = new BufferedReader(fr);
                     allowedSpace = Long.parseLong(br.readLine());
                     br.close();
@@ -328,9 +328,14 @@ public class Peer implements PeerInterface{
             RestoreRequest req = new RestoreRequest(executor, file_path);
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
-            ReclaimRequest req = new ReclaimRequest(executor, 500);
+            ReclaimRequest req = new ReclaimRequest(executor, 400000);
             executor.schedule(req, 0, TimeUnit.SECONDS);
             */
+        }
+
+        if(senderId == 2){
+            ReclaimRequest req = new ReclaimRequest(executor, 0);
+            executor.schedule(req, 0, TimeUnit.SECONDS);
         }
 
         try {

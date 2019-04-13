@@ -20,9 +20,22 @@ public class ReclaimRequest implements Runnable{
     @Override
     public void run() {
         System.out.println("Used space: " + Peer.getUsedSpace());
+
         if(clean){
             File directory = new File("peer" + Peer.senderId + "/backup");
-            Auxiliary.clearDirectory(directory);
+            String[] dirs = directory.list();
+            if(dirs != null)
+                for(String s : dirs){
+                    File dir = new File(directory.getPath(), s);
+                    Auxiliary.clearDirectory(dir);
+                }
+            try {
+                if (!directory.delete())
+                    throw new Exception("couldn't delete directory");
+            } catch(Exception e){
+                e.printStackTrace();
+                System.exit(-1);
+            }
         } else{
             for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
                 Value value = entry.getValue();
@@ -49,6 +62,17 @@ public class ReclaimRequest implements Runnable{
                         return;
                 }
             }
+            for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
+                Key key = entry.getKey();
+
+                RemovedNotice not = new RemovedNotice(key.file,key.chunk);
+                executor.schedule(not , 0, TimeUnit.SECONDS);
+
+                if(Peer.getUsedSpace() <= Peer.allowedSpace)
+                    return;
+            }
         }
+
+        System.out.println("Used space: " + Peer.getUsedSpace());
     }
 }
