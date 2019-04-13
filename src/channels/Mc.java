@@ -77,7 +77,9 @@ public class Mc extends Channel{
                 if (message != null) {
                     String[] tokens = message.split(" ");
                     if (Integer.parseInt(tokens[2]) != Peer.senderId) {
-                        Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
+                        Key key = null;
+                        if(!tokens[0].equals("DELETE"))
+                            key = new Key(tokens[3], Integer.parseInt(tokens[4]));
                         switch (tokens[0]) {
                             case "REMOVED":
                                 if (Peer.stores.containsKey(key)) {
