@@ -352,7 +352,7 @@ public class Peer implements PeerInterface{
         setupThread(mc);
         setupThread(mdr);
 
-        executor = Executors.newScheduledThreadPool(20);
+        executor = Executors.newScheduledThreadPool(100);
 /*
         if (senderId == 1 || senderId == 5) {
             int rd;

@@ -17,6 +17,26 @@ public class ReclaimRequest implements Runnable{
             this.clean = true;
     }
 
+    private void clearDirectory(File directory) {
+        if (directory.exists()) {
+            try {
+                String[] files = directory.list();
+                if(files != null){
+                    for (String s : files) {
+                        File currentFile = new File(directory.getPath(), s);
+                        RemovedNotice not = new RemovedNotice(directory.getName(), Integer.parseInt(currentFile.getName().substring(3)));
+                        executor.schedule(not , 0, TimeUnit.SECONDS);
+                    }
+                    if (!directory.delete())
+                        throw new Exception("couldn't delete directory");
+                }
+            } catch(Exception e){
+                e.printStackTrace();
+                System.exit(-1);
+            }
+        }
+    }
+
     @Override
     public void run() {
         System.out.println("Used space: " + Peer.getUsedSpace());
@@ -27,7 +47,7 @@ public class ReclaimRequest implements Runnable{
             if(dirs != null)
                 for(String s : dirs){
                     File dir = new File(directory.getPath(), s);
-                    Auxiliary.clearDirectory(dir);
+                    clearDirectory(dir);
                 }
             try {
                 if (!directory.delete())
