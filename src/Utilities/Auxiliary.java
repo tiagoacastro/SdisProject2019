@@ -9,16 +9,22 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Auxiliary {
-    public static String addHeader(String type, String[] params) {
+    public static String addHeader(String type, String[] params, boolean enhanced) {
         StringBuilder result = new StringBuilder();
+        String version;
 
         for (String param : params) {
             result.append(param);
             result.append(" ");
         }
 
+        if(enhanced)
+            version = "1.1";
+        else
+            version = "1.0";
+
         return type + " " +
-                Peer.version + " " +
+                version + " " +
                 Peer.senderId + " " +
                 result.toString() +
                 "\r\n\r\n";

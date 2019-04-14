@@ -90,7 +90,7 @@ public class RestoreRequest implements Runnable {
 
         do {
             String[] params = new String[]{this.fileId, String.valueOf(chunkNo)};
-            String message = Auxiliary.addHeader("GETCHUNK", params);
+            String message = Auxiliary.addHeader("GETCHUNK", params, false);
             Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
 
             try {

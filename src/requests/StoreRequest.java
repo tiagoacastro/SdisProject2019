@@ -17,12 +17,14 @@ public class StoreRequest implements Runnable {
     private String fileId;
     private int rd;
     private ArrayList<Chunk> chunks = new ArrayList<>();
+    private boolean enhanced;
 
-    public StoreRequest(ScheduledExecutorService executor, String fp, int rd) {
+    public StoreRequest(ScheduledExecutorService executor, String fp, int rd, boolean enhanced) {
         this.executor = executor;
         this.rd = rd;
         this.file_path = fp;
         this.file = new File(fp);
+        this.enhanced = enhanced;
 
         this.fileId = Auxiliary.encodeFileId(file);
         Peer.requests.put(this.fileId, this);
@@ -54,7 +56,7 @@ public class StoreRequest implements Runnable {
                 Value value = Peer.stores.get(new Key(fileId, chunkNo));
                 if(value != null)
                     stores = value.stores;
-                Chunk chunk = new Chunk(chunkNo, this.fileId, trimmedBuf, rd, executor, stores);
+                Chunk chunk = new Chunk(chunkNo, this.fileId, trimmedBuf, rd, executor, stores, enhanced);
                 this.chunks.add(chunk);
 
                 chunkNo++;
@@ -66,7 +68,7 @@ public class StoreRequest implements Runnable {
                 Value value = Peer.stores.get(new Key(fileId, chunkNo));
                 if(value != null)
                     stores = value.stores;
-                Chunk chunk = new Chunk(chunkNo, this.fileId, null, rd, executor, stores);
+                Chunk chunk = new Chunk(chunkNo, this.fileId, null, rd, executor, stores, enhanced);
                 this.chunks.add(chunk);
             }
         } catch(IOException e) {

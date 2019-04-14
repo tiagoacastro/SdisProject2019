@@ -229,7 +229,11 @@ public class Peer implements PeerInterface{
 
     @Override
     public void backup(String file_path, Integer replicationDegree, boolean enhanced) {
-        StoreRequest req = new StoreRequest(executor, file_path, replicationDegree);
+        if(enhanced && !version.equals("1.1")){
+            System.out.println("Received enhanced backup request, but peer version can't handle");
+            System.exit(-1);
+        }
+        StoreRequest req = new StoreRequest(executor, file_path, replicationDegree, enhanced);
         executor.submit(req);
     }
 

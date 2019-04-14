@@ -15,8 +15,9 @@ public class Chunk implements Runnable{
     private int rd;
     private int stores;
     private int sends = 0;
+    private boolean enhanced;
 
-    Chunk(int chunkNo, String fileId, byte[] body, int rd, ScheduledExecutorService executor, int stores)
+    Chunk(int chunkNo, String fileId, byte[] body, int rd, ScheduledExecutorService executor, int stores, boolean enhanced)
     {
         this.chunkNo = chunkNo;
         this.fileId = fileId;
@@ -24,6 +25,7 @@ public class Chunk implements Runnable{
         this.rd = rd;
         this.executor = executor;
         this.stores = stores;
+        this.enhanced  = enhanced;
     }
 
     public void store() { stores++; }
@@ -41,7 +43,7 @@ public class Chunk implements Runnable{
 
             System.out.println("send " + sends + " of #" + chunkNo + " with stores=" + stores);
             params = new String[]{String.valueOf(fileId), String.valueOf(chunkNo), String.valueOf(rd)};
-            header = Auxiliary.addHeader("PUTCHUNK", params);
+            header = Auxiliary.addHeader("PUTCHUNK", params, enhanced);
 
             headerBytes = header.getBytes();
             messageSize = headerBytes.length + body.length;

@@ -83,24 +83,34 @@ public class Mdb extends Channel{
 
                 if (message != null) {
                     String[] tokens = message.split(" ");
-                    byte[] content = getContent(msg);
 
                     if (tokens[0].equals("PUTCHUNK") ) {
                         if (!Peer.rds.containsKey(tokens[3]))
                             Peer.rds.put(tokens[3], Integer.parseInt(tokens[5]));
 
                         if (Integer.parseInt(tokens[2]) != Peer.senderId && !Peer.sent.contains(tokens[3])) {
+                            byte[] content = getContent(msg);
                             Key key = new Key(tokens[3], Integer.parseInt(tokens[4]));
                             Mc.addPutChunk(key);
 
                             File chunk = new File("peer" + Peer.senderId + "/backup/" + tokens[3] + "/chk" + tokens[4]);
 
                             if (!chunk.exists() && Peer.getUsedSpace() + content.length <= Peer.allowedSpace) {
+                                boolean enhanced = tokens[1].equals("1.1");
+                                if(enhanced) {
+                                    if(!Peer.version.equals("1.1")){
+                                        System.out.println("Received enhanced PUTCHUNK, but peer version can't handle");
+                                        System.exit(-1);
+                                    }
+                                    if (Peer.stores.get(key).stores >= Integer.parseInt(tokens[5]))
+                                        continue;
+                                }
+
                                 createChunk(content, tokens[3], tokens[4]);
 
                                 String[] params = new String[]{tokens[3], tokens[4]};
                                 System.out.println("sending STORE for " + tokens[3] + " #" + tokens[4]);
-                                message = Auxiliary.addHeader("STORED", params);
+                                message = Auxiliary.addHeader("STORED", params, enhanced);
 
                                 Random rand = new Random();
                                 int interval = rand.nextInt(401);

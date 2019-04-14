@@ -38,7 +38,7 @@ public class DeleteRequest implements Runnable {
 
         first = false;
         String[] params = new String[]{this.fileId};
-        String message = Auxiliary.addHeader("DELETE", params);
+        String message = Auxiliary.addHeader("DELETE", params, false);
         Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
 
     }
