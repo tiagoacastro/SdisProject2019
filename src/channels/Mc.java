@@ -3,6 +3,7 @@ package channels;
 import Utilities.Auxiliary;
 import Utilities.Key;
 import Utilities.Value;
+import requests.DeleteRequest;
 import requests.StoreRequest;
 import mains.*;
 
@@ -81,7 +82,7 @@ public class Mc extends Channel{
                     String[] tokens = message.split(" ");
                     if (Integer.parseInt(tokens[2]) != Peer.senderId) {
                         Key key = null;
-                        if(!tokens[0].equals("DELETE"))
+                        if(!tokens[0].equals("DELETE") && !tokens[0].equals("JOIN"))
                             key = new Key(tokens[3], Integer.parseInt(tokens[4]));
                         switch (tokens[0]) {
                             case "REMOVED":
@@ -179,6 +180,15 @@ public class Mc extends Channel{
                                     }
 
                                     chunksReceived.clear();
+                                }
+                                break;
+                            case "JOIN":
+                                if(Peer.version.equals("1.1")) {
+                                    System.out.println("Sending deletes after join");
+                                    for (String file : Peer.deletes) {
+                                        DeleteRequest del = new DeleteRequest(Peer.executor, file, false);
+                                        Peer.executor.submit(del);
+                                    }
                                 }
                                 break;
                         }

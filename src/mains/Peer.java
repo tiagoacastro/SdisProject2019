@@ -3,6 +3,7 @@ package mains;
 import Utilities.Auxiliary;
 import Utilities.Key;
 import Utilities.Value;
+import channels.Channel;
 import requests.*;
 import channels.Mc;
 import channels.Mdb;
@@ -20,12 +21,13 @@ import java.util.concurrent.TimeUnit;
 public class Peer implements PeerInterface{
     public static String version;
     public static int senderId;
-    private static ScheduledExecutorService executor;
+    public static ScheduledExecutorService executor;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Value> stores = new HashMap<>();
     public static HashMap<String, Integer> rds = new HashMap<>();
     public static ArrayList<String> sent = new ArrayList<>();
+    public static ArrayList<String> deletes = new ArrayList<>();
     public static long allowedSpace = 100000000;
 
     private static void loadRds(){
@@ -106,6 +108,27 @@ public class Peer implements PeerInterface{
                     String line;
                     while ((line = br.readLine()) != null)
                         sent.add(line);
+                    br.close();
+                    fr.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+            }
+        }
+    }
+
+    private static void loadDeletes(){
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (directoryPeer.exists()){
+            File file = new File("peer" + Peer.senderId + "/deletes.txt");
+            if(file.exists()){
+                try {
+                    FileReader fr = new FileReader("peer" + Peer.senderId + "/deletes.txt");
+                    BufferedReader br = new BufferedReader(fr);
+                    String line;
+                    while ((line = br.readLine()) != null)
+                        deletes.add(line);
                     br.close();
                     fr.close();
                 } catch (Exception e) {
@@ -213,6 +236,29 @@ public class Peer implements PeerInterface{
         closeOutputStreams(fs, out);
     }
 
+    private static void saveDeletes(){
+        FileOutputStream fs = null;
+        PrintWriter out = null;
+
+        File directoryPeer = new File("peer" + Peer.senderId);
+        if (!directoryPeer.exists())
+            if(!directoryPeer.mkdir())
+                return;
+
+        try {
+            fs = new FileOutputStream("peer" + Peer.senderId + "/deletes.txt");
+            out = new PrintWriter(fs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
+        for (String file : deletes)
+            out.println(file);
+
+        closeOutputStreams(fs, out);
+    }
+
     private static void closeOutputStreams(FileOutputStream fs, PrintWriter out) {
         try {
             out.close();
@@ -245,7 +291,7 @@ public class Peer implements PeerInterface{
 
     @Override
     public void delete(String file_path, boolean enhanced) {
-        DeleteRequest req = new DeleteRequest(executor, file_path);
+        DeleteRequest req = new DeleteRequest(executor, file_path, true);
         executor.submit(req);
     }
 
@@ -269,6 +315,8 @@ public class Peer implements PeerInterface{
             saveRds();
             saveStores();
             saveSent();
+            if(version.equals("1.1"))
+                saveDeletes();
         }
     }
 
@@ -296,6 +344,8 @@ public class Peer implements PeerInterface{
         loadRds();
         loadStores();
         loadSent();
+        if(version.equals("1.1"))
+            loadDeletes();
 
         String mdbAddr = args[3];
         int mdbPort = Integer.parseInt(args[4]);
@@ -308,40 +358,22 @@ public class Peer implements PeerInterface{
 
         executor = Executors.newScheduledThreadPool(100);
 
-         executor.submit(new Mdb(mdbAddr, mdbPort));
-         executor.submit(new Mc(mcAddr, mcPort));
-         executor.submit(new Mdr(mdrAddr, mdrPort));
-/*
-        if (senderId == 1 || senderId == 5) {
-            int rd;
-            String file_path;
-            if(senderId == 1){
-                rd = 2;
-                file_path = "rsc/image.jpg";
-            } else {
-                rd = 2;
-                file_path = "rsc/image3.jpg";
+        executor.submit(new Mdb(mdbAddr, mdbPort));
+        executor.submit(new Mc(mcAddr, mcPort));
+        executor.submit(new Mdr(mdrAddr, mdrPort));
+
+        if(version.equals("1.1")){
+            String[] params = new String[]{};
+            String message = Auxiliary.addHeader("JOIN", params, true);
+            System.out.println("Sending Join");
+            Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
+
+            for (String file : Peer.deletes) {
+                DeleteRequest del = new DeleteRequest(Peer.executor, file, false);
+                Peer.executor.submit(del);
             }
-
-            StoreRequest req = new StoreRequest(executor, file_path, rd);
-            executor.submit(req);
-
-            DeleteRequest req = new DeleteRequest(executor, file_path);
-            executor.submit(req);
-
-            RestoreRequest req = new RestoreRequest(executor, file_path);
-            executor.submit(req);
-
-            ReclaimRequest req = new ReclaimRequest(executor, 400);
-            executor.submit(req);
-
         }
 
-        if(senderId == 2){
-            ReclaimRequest req = new ReclaimRequest(executor, 100000);
-            executor.submit(req);
-        }
-*/
         try {
             executor.awaitTermination(1, TimeUnit.DAYS);
         } catch (InterruptedException e) {
