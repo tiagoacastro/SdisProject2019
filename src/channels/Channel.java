@@ -36,7 +36,7 @@ public abstract class Channel implements Runnable{
             byte[] msg = new byte[65000];
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             socket.receive(packet);
-            return trimMessage(msg);
+            return trimMessage(packet);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
@@ -44,18 +44,8 @@ public abstract class Channel implements Runnable{
         return null;
     }
 
-    private static byte[] trimMessage(byte []msg) {
-        int paddingZeros = 0, index = 64999;
-        while(true)
-        {
-            if(msg[index] != 0)
-                break;
-
-            paddingZeros++;
-            index--;
-        }
-
-        return Arrays.copyOf(msg, msg.length - paddingZeros + 1);
+    private static byte[] trimMessage(DatagramPacket packet) {
+        return Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
     }
 
     static void sendPacket(String message, InetAddress address, int port) {
