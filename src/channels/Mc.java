@@ -184,9 +184,9 @@ public class Mc extends Channel{
                                 break;
                             case "JOIN":
                                 if(Peer.version.equals("1.1")) {
-                                    System.out.println("Sending deletes after join");
                                     for (String file : Peer.deletes) {
-                                        DeleteRequest del = new DeleteRequest(Peer.executor, file, false);
+                                        System.out.println("Sent delete after join");
+                                        DeleteRequest del = new DeleteRequest(Peer.executor, file, false, true);
                                         Peer.executor.submit(del);
                                     }
                                 }

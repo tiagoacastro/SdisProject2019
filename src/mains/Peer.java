@@ -291,7 +291,7 @@ public class Peer implements PeerInterface{
 
     @Override
     public void delete(String file_path, boolean enhanced) {
-        DeleteRequest req = new DeleteRequest(executor, file_path, true);
+        DeleteRequest req = new DeleteRequest(executor, file_path, true, enhanced);
         executor.submit(req);
     }
 
@@ -369,7 +369,7 @@ public class Peer implements PeerInterface{
             Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
 
             for (String file : Peer.deletes) {
-                DeleteRequest del = new DeleteRequest(Peer.executor, file, false);
+                DeleteRequest del = new DeleteRequest(Peer.executor, file, false, true);
                 Peer.executor.submit(del);
             }
         }
