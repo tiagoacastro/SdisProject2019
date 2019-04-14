@@ -98,10 +98,7 @@ public class Mdb extends Channel{
                             if (!chunk.exists() && Peer.getUsedSpace() + content.length <= Peer.allowedSpace) {
                                 boolean enhanced = tokens[1].equals("1.1");
 
-                                createChunk(content, tokens[3], tokens[4]);
-
                                 String[] params = new String[]{tokens[3], tokens[4]};
-                                System.out.println("sending STORE for " + tokens[3] + " #" + tokens[4]);
                                 message = Auxiliary.addHeader("STORED", params, enhanced);
 
                                 Random rand = new Random();
@@ -122,6 +119,10 @@ public class Mdb extends Channel{
                                         if (Peer.stores.get(key).stores >= Integer.parseInt(tokens[5]))
                                             continue;
                                 }
+
+                                System.out.println("sending STORE for " + tokens[3] + " #" + tokens[4]);
+
+                                createChunk(content, tokens[3], tokens[4]);
 
                                 if(Peer.stores.containsKey(key))
                                     Peer.stores.get(key).increment();
