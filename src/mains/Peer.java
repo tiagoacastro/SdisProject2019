@@ -28,16 +28,6 @@ public class Peer implements PeerInterface{
     public static ArrayList<String> sent = new ArrayList<>();
     public static long allowedSpace = 100000000;
 
-    private static void setupThread(Thread th) {
-        try {
-            th.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
-        th.start();
-    }
-
     private static void loadRds(){
         File directoryPeer = new File("peer" + Peer.senderId);
         if (directoryPeer.exists()){
@@ -266,66 +256,6 @@ public class Peer implements PeerInterface{
         StateRequest req = new StateRequest();
         executor.submit(req);
         return req.getStateMessage();
- /*       StringBuilder result = new StringBuilder();
-        result.append("Backups initiated\n\n");
-        int i = 0;
-
-        for(Map.Entry<String, StoreRequest> entry : requests.entrySet()) {
-            String fileId = entry.getKey();
-            StoreRequest request = entry.getValue();
-            result.append("Backup #");
-            result.append(i);
-            result.append("\n\n");
-            result.append("File path: ");
-            result.append(request.getFile_path());
-            result.append("\n");
-            result.append("File id: ");
-            result.append(fileId);
-            result.append("\n");
-            result.append("Desired replication degree: ");
-            result.append(request.getRd());
-            result.append("\n\n");
-
-            for(Chunk c: request.getChunks())
-            {
-                result.append("Chunk id: chk_");
-                result.append(c.getChunkNo());
-                result.append("\n");
-                result.append("Perceived replication degree: ");
-                result.append(Peer.stores.get(new Key(fileId, c.getChunkNo())));
-                result.append("\n\n");
-            }
-
-            result.append("\n");
-            i++;
-        }
-
-        result.append("Stored Files\n\n");
-
-        File directory = new File("peer" + senderId + "/backup");
-        File[] directoryListing = directory.listFiles();
-        if (directoryListing != null) {
-            for (File fileDirectory : directoryListing) {
-                File[] chunks = fileDirectory.listFiles();
-                result.append("Fileid: ");
-                result.append(fileDirectory.getName());
-                result.append("\n\n");
-                if(chunks != null)
-                    for (File chunk : chunks) {
-                        result.append("Chunk id: ");
-                        result.append(chunk.getName());
-                        result.append("\n");
-                        result.append("Chunk size: ");
-                        result.append(chunk.length());
-                        result.append(" bytes\n");
-                        result.append("Perceived replication degree: ");
-                        result.append(Peer.stores.get(new Key(fileDirectory.getName(), Integer.parseInt(chunk.getName().substring(3)))));
-                        result.append("\n\n");
-                    }
-            }
-        }
-
-        return result.toString();*/
     }
 
     private static class Hook extends Thread{
@@ -372,15 +302,11 @@ public class Peer implements PeerInterface{
         String mdrAddr = args[7];
         int mdrPort = Integer.parseInt(args[8]);
 
-        Thread mdb = new Thread(new Mdb(mdbAddr, mdbPort));
-        Thread mc = new Thread(new Mc(mcAddr, mcPort));
-        Thread mdr = new Thread(new Mdr(mdrAddr, mdrPort));
-
-        setupThread(mdb);
-        setupThread(mc);
-        setupThread(mdr);
-
         executor = Executors.newScheduledThreadPool(100);
+
+         executor.submit(new Mdb(mdbAddr, mdbPort));
+         executor.submit(new Mc(mcAddr, mcPort));
+         executor.submit(new Mdr(mdrAddr, mdrPort));
 /*
         if (senderId == 1 || senderId == 5) {
             int rd;
@@ -402,7 +328,7 @@ public class Peer implements PeerInterface{
             RestoreRequest req = new RestoreRequest(executor, file_path);
             executor.submit(req);
 
-            ReclaimRequest req = new ReclaimRequest(executor, 400000);
+            ReclaimRequest req = new ReclaimRequest(executor, 400);
             executor.submit(req);
 
         }
@@ -421,4 +347,3 @@ public class Peer implements PeerInterface{
         executor.shutdown();
     }
 }
-
