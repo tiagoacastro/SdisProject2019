@@ -352,11 +352,11 @@ public class Peer implements PeerInterface{
         if(version.equals("1.1"))
             loadDeletes();
 
-        String mdbAddr = args[3];
-        int mdbPort = Integer.parseInt(args[4]);
+        String mcAddr = args[3];
+        int mcPort = Integer.parseInt(args[4]);
 
-        String mcAddr = args[5];
-        int mcPort = Integer.parseInt(args[6]);
+        String mdbAddr = args[5];
+        int mdbPort = Integer.parseInt(args[6]);
 
         String mdrAddr = args[7];
         int mdrPort = Integer.parseInt(args[8]);
