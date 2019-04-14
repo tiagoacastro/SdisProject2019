@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class DeleteRequest implements Runnable {
     private ScheduledExecutorService executor;
     private String fileId;
+    private boolean first = true;
 
     DeleteRequest(ScheduledExecutorService executor, String fp) {
         this.executor = executor;
@@ -20,12 +21,14 @@ public class DeleteRequest implements Runnable {
 
     @Override
     public void run() {
-        for (Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
-            Key k = entry.getKey();
+        if(first)
+            for (Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
+                Key k = entry.getKey();
 
-            if (k.file.equals(fileId))
-                entry.getValue().stores = 0;
-        }
+                if (k.file.equals(fileId))
+                    entry.getValue().stores = 0;
+            }
+        first = false;
         String[] params = new String[]{this.fileId};
         String message = Auxiliary.addHeader("DELETE", params);
         Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);

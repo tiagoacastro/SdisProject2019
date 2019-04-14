@@ -12,11 +12,11 @@ public class Value {
         return Integer.toString(stores);
     }
 
-    public void increment(){
+    public synchronized void increment(){
         stores++;
     }
 
-    public void decrement(){
+    public synchronized void decrement(){
         stores--;
     }
 }
