@@ -102,8 +102,9 @@ public class Mdb extends Channel{
                                         System.out.println("Received enhanced PUTCHUNK, but peer version can't handle");
                                         System.exit(-1);
                                     }
-                                    if (Peer.stores.get(key).stores >= Integer.parseInt(tokens[5]))
-                                        continue;
+                                    if(Peer.stores.containsKey(key))
+                                        if (Peer.stores.get(key).stores >= Integer.parseInt(tokens[5]))
+                                            continue;
                                 }
 
                                 createChunk(content, tokens[3], tokens[4]);
