@@ -9,7 +9,6 @@ import channels.Mdb;
 import channels.Mdr;
 
 import java.io.*;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -239,69 +238,91 @@ public class Peer implements PeerInterface{
     }
 
     @Override
-    public void backup(String file_path, Integer replicationDegree) throws RemoteException {
+    public void backup(String file_path, Integer replicationDegree) {
         StoreRequest req = new StoreRequest(executor, file_path, replicationDegree);
         executor.schedule(req, 0, TimeUnit.SECONDS);
     }
 
     @Override
-    public void restore(String file_path) throws RemoteException {
+    public void restore(String file_path) {
         RestoreRequest req = new RestoreRequest(file_path);
         executor.schedule(req, 0, TimeUnit.SECONDS);
     }
 
     @Override
-    public void delete(String file_path) throws RemoteException {
+    public void delete(String file_path) {
         DeleteRequest req = new DeleteRequest(executor, file_path);
         executor.schedule(req, 0, TimeUnit.SECONDS);
     }
 
     @Override
-    public void reclaim(long maximum_space) throws RemoteException {
+    public void reclaim(long maximum_space) {
         ReclaimRequest req = new ReclaimRequest(executor, maximum_space);
         executor.schedule(req, 0, TimeUnit.SECONDS);
     }
 
     @Override
-    public String state() throws RemoteException {
-        String message = "Backups initiated\n\n";
+    public String state() {
+        StringBuilder result = new StringBuilder();
+        result.append("Backups initiated\n\n");
         int i = 0;
 
         for(Map.Entry<String, StoreRequest> entry : requests.entrySet()) {
             String fileId = entry.getKey();
             StoreRequest request = entry.getValue();
-            message += "Backup #" + i + "\n\n" +
-                       "File path: " + request.getFile_path() + "\n" +
-                       "File id: " + fileId + "\n" +
-                       "Desired replication degree: " + request.getRd() + "\n\n";
+            result.append("Backup #");
+            result.append(i);
+            result.append("\n\n");
+            result.append("File path: ");
+            result.append(request.getFile_path());
+            result.append("\n");
+            result.append("File id: ");
+            result.append(fileId);
+            result.append("\n");
+            result.append("Desired replication degree: ");
+            result.append(request.getRd());
+            result.append("\n\n");
 
             for(Chunk c: request.getChunks())
             {
-                message += "Chunk id: chk_" + c.getChunkNo() + "\n";
-                message += "Perceived replication degree: " + Peer.stores.get(new Key(fileId, c.getChunkNo())) + "\n\n";
+                result.append("Chunk id: chk_");
+                result.append(c.getChunkNo());
+                result.append("\n");
+                result.append("Perceived replication degree: ");
+                result.append(Peer.stores.get(new Key(fileId, c.getChunkNo())));
+                result.append("\n\n");
             }
 
-            message += "\n";
+            result.append("\n");
             i++;
         }
 
-        message += "Stored Files\n\n";
+        result.append("Stored Files\n\n");
 
         File directory = new File("peer" + senderId + "/backup");
         File[] directoryListing = directory.listFiles();
         if (directoryListing != null) {
             for (File fileDirectory : directoryListing) {
                 File[] chunks = fileDirectory.listFiles();
-                message += "Fileid: " + fileDirectory.getName() + "\n\n";
-                for (File chunk : chunks) {
-                    String chunkId = chunk.getName();
-                    message += "Chunk id: " + chunk.getName() + "\n";
-                    message += "Chunk size: " + chunk.length() + " bytes\n";
-                    message += "Perceived replication degree: " + Peer.stores.get(new Key(fileDirectory.getName(), Integer.parseInt(chunk.getName().substring(3)))) + "\n\n";                }
+                result.append("Fileid: ");
+                result.append(fileDirectory.getName());
+                result.append("\n\n");
+                if(chunks != null)
+                    for (File chunk : chunks) {
+                        result.append("Chunk id: ");
+                        result.append(chunk.getName());
+                        result.append("\n");
+                        result.append("Chunk size: ");
+                        result.append(chunk.length());
+                        result.append(" bytes\n");
+                        result.append("Perceived replication degree: ");
+                        result.append(Peer.stores.get(new Key(fileDirectory.getName(), Integer.parseInt(chunk.getName().substring(3)))));
+                        result.append("\n\n");
+                    }
             }
         }
 
-        return message;
+        return result.toString();
     }
 
     private static class Hook extends Thread{
@@ -323,7 +344,7 @@ public class Peer implements PeerInterface{
         version = args[0];
         senderId = Integer.parseInt(args[1]);
         String accessPoint = args[2];
-/*
+
         try {
             Peer obj = new Peer();
             PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(obj, 0);
@@ -333,7 +354,7 @@ public class Peer implements PeerInterface{
             e.printStackTrace();
             System.exit(-1);
         }
-*/
+
         loadSpace();
         loadRds();
         loadStores();
@@ -382,12 +403,12 @@ public class Peer implements PeerInterface{
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
         }
-*/
+
         if(senderId == 2){
             ReclaimRequest req = new ReclaimRequest(executor, 100000);
             executor.schedule(req, 0, TimeUnit.SECONDS);
         }
-
+*/
         try {
             executor.awaitTermination(1, TimeUnit.DAYS);
         } catch (InterruptedException e) {
