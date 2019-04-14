@@ -1,3 +1,3 @@
 cd src
-java mains/TestApp peer4 RECLAIM 400
+java mains/TestApp peer1 RECLAIM 400
 

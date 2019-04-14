@@ -1,3 +1,3 @@
 cd src
-java mains/TestApp peer2 BACKUP ../rsc/image.jpg 2
+java mains/TestApp peer2 BACKUP ../rsc/image2.jpg 2
 
