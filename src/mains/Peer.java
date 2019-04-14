@@ -323,7 +323,7 @@ public class Peer implements PeerInterface{
         version = args[0];
         senderId = Integer.parseInt(args[1]);
         String accessPoint = args[2];
-
+/*
         try {
             Peer obj = new Peer();
             PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(obj, 0);
@@ -333,7 +333,7 @@ public class Peer implements PeerInterface{
             e.printStackTrace();
             System.exit(-1);
         }
-        
+*/
         loadSpace();
         loadRds();
         loadStores();
@@ -362,7 +362,7 @@ public class Peer implements PeerInterface{
             int rd;
             String file_path;
             if(senderId == 1){
-                rd = 1;
+                rd = 2;
                 file_path = "rsc/image.jpg";
             } else {
                 rd = 2;
@@ -382,12 +382,12 @@ public class Peer implements PeerInterface{
             executor.schedule(req, 0, TimeUnit.SECONDS);
 
         }
-
+*/
         if(senderId == 2){
-            ReclaimRequest req = new ReclaimRequest(executor, 0);
+            ReclaimRequest req = new ReclaimRequest(executor, 100000);
             executor.schedule(req, 0, TimeUnit.SECONDS);
         }
-*/
+
         try {
             executor.awaitTermination(1, TimeUnit.DAYS);
         } catch (InterruptedException e) {

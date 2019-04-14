@@ -11,16 +11,16 @@ import java.io.File;
 public class RemovedNotice implements Runnable {
     private String fileId;
     private int chunkNo;
+    private boolean delete;
 
     RemovedNotice(String fileId, int chunkNo) {
         this.fileId = fileId;
         this.chunkNo = chunkNo;
+        this.delete = delete();
     }
 
     @Override
     public void run() {
-        boolean delete = delete();
-        
         if(delete) {
             String[] params = new String[]{this.fileId, Integer.toString(this.chunkNo)};
             String message = Auxiliary.addHeader("REMOVED", params);

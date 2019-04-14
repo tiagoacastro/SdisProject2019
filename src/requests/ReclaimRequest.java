@@ -16,7 +16,7 @@ public class ReclaimRequest implements Runnable{
     public ReclaimRequest(ScheduledExecutorService executor, long maximumSpace) {
         this.executor = executor;
         if(maximumSpace != 0)
-            Peer.allowedSpace = maximumSpace * 1000;
+            Peer.allowedSpace = maximumSpace;
         else
             this.clean = true;
     }
@@ -72,7 +72,6 @@ public class ReclaimRequest implements Runnable{
     }
 
     private void deleteNeededFiles() {
-        boolean next = true;
         for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
             Value value = entry.getValue();
             Key key = entry.getKey();
@@ -81,41 +80,35 @@ public class ReclaimRequest implements Runnable{
                 RemovedNotice not = new RemovedNotice(key.file,key.chunk);
                 executor.schedule(not , 0, TimeUnit.SECONDS);
 
+                if(Peer.getUsedSpace() <= Peer.allowedSpace)
+                    return;
+            }
+        }
+        for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
+            Value value = entry.getValue();
+
+            if(value.stores > 1){
+                Key key = entry.getKey();
+
+                RemovedNotice not = new RemovedNotice(key.file,key.chunk);
+                executor.schedule(not , 0, TimeUnit.SECONDS);
+
                 if(Peer.getUsedSpace() <= Peer.allowedSpace){
-                    next = false;
-                    break;
+                    return;
                 }
             }
         }
-        if(next){
-            for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
-                Value value = entry.getValue();
+        for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
+            Value value = entry.getValue();
 
-                if(value.stores > 1){
-                    Key key = entry.getKey();
+            if(value.stores != 0) {
+                Key key = entry.getKey();
+                RemovedNotice not = new RemovedNotice(key.file, key.chunk);
+                executor.schedule(not, 0, TimeUnit.SECONDS);
 
-                    RemovedNotice not = new RemovedNotice(key.file,key.chunk);
-                    executor.schedule(not , 0, TimeUnit.SECONDS);
-
-                    if(Peer.getUsedSpace() <= Peer.allowedSpace){
-                        next = false;
-                        break;
-                    }
-                }
+                if (Peer.getUsedSpace() <= Peer.allowedSpace)
+                    return;
             }
-            if(next)
-                for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
-                    Value value = entry.getValue();
-
-                    if(value.stores != 0) {
-                        Key key = entry.getKey();
-                        RemovedNotice not = new RemovedNotice(key.file, key.chunk);
-                        executor.schedule(not, 0, TimeUnit.SECONDS);
-
-                        if (Peer.getUsedSpace() <= Peer.allowedSpace)
-                            break;
-                    }
-                }
         }
     }
 }
