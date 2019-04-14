@@ -42,27 +42,54 @@ public class ReclaimRequest implements Runnable{
         System.out.println("Used space: " + Peer.getUsedSpace());
 
         if(clean){
-            File directory = new File("peer" + Peer.senderId + "/backup");
-            String[] dirs = directory.list();
-            if(dirs != null)
-                for(String s : dirs){
-                    File dir = new File(directory.getPath(), s);
-                    clearDirectory(dir);
-                }
-            try {
-                if (!directory.delete())
-                    throw new Exception("couldn't delete backup directory");
-            } catch(Exception e){
-                e.printStackTrace();
-                System.exit(-1);
-            }
+            deleteAllFiles();
         } else{
-            boolean next = true;
+            deleteNeededFiles();
+        }
+
+        System.out.println("Used space: " + Peer.getUsedSpace());
+    }
+
+    private void deleteAllFiles() {
+        File directory = new File("peer" + Peer.senderId + "/backup");
+        String[] dirs = directory.list();
+        if(dirs != null)
+            for(String s : dirs){
+                File dir = new File(directory.getPath(), s);
+                clearDirectory(dir);
+            }
+        try {
+            if (!directory.delete())
+                throw new Exception("couldn't delete backup directory");
+        } catch(Exception e){
+            e.printStackTrace();
+            System.exit(-1);
+        }
+    }
+
+    private void deleteNeededFiles() {
+        boolean next = true;
+        for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
+            Value value = entry.getValue();
+            Key key = entry.getKey();
+
+            if(value.stores > Peer.rds.get(key.file)){
+                RemovedNotice not = new RemovedNotice(key.file,key.chunk);
+                executor.schedule(not , 0, TimeUnit.SECONDS);
+
+                if(Peer.getUsedSpace() <= Peer.allowedSpace){
+                    next = false;
+                    break;
+                }
+            }
+        }
+        if(next){
             for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
                 Value value = entry.getValue();
-                Key key = entry.getKey();
 
-                if(value.stores > Peer.rds.get(key.file)){
+                if(value.stores > 1){
+                    Key key = entry.getKey();
+
                     RemovedNotice not = new RemovedNotice(key.file,key.chunk);
                     executor.schedule(not , 0, TimeUnit.SECONDS);
 
@@ -72,38 +99,19 @@ public class ReclaimRequest implements Runnable{
                     }
                 }
             }
-            if(next){
+            if(next)
                 for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
                     Value value = entry.getValue();
 
-                    if(value.stores > 1){
+                    if(value.stores != 0) {
                         Key key = entry.getKey();
+                        RemovedNotice not = new RemovedNotice(key.file, key.chunk);
+                        executor.schedule(not, 0, TimeUnit.SECONDS);
 
-                        RemovedNotice not = new RemovedNotice(key.file,key.chunk);
-                        executor.schedule(not , 0, TimeUnit.SECONDS);
-
-                        if(Peer.getUsedSpace() <= Peer.allowedSpace){
-                            next = false;
+                        if (Peer.getUsedSpace() <= Peer.allowedSpace)
                             break;
-                        }
                     }
                 }
-                if(next)
-                    for(Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
-                        Value value = entry.getValue();
-
-                        if(value.stores != 0) {
-                            Key key = entry.getKey();
-                            RemovedNotice not = new RemovedNotice(key.file, key.chunk);
-                            executor.schedule(not, 0, TimeUnit.SECONDS);
-
-                            if (Peer.getUsedSpace() <= Peer.allowedSpace)
-                                break;
-                        }
-                    }
-            }
         }
-
-        System.out.println("Used space: " + Peer.getUsedSpace());
     }
 }

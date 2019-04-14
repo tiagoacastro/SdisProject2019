@@ -8,7 +8,6 @@ import java.io.File;
 public class RemovedNotice implements Runnable {
     private String fileId;
     private int chunkNo;
-    private boolean delete = true;
 
     RemovedNotice(String fileId, int chunkNo) {
         this.fileId = fileId;
@@ -17,6 +16,16 @@ public class RemovedNotice implements Runnable {
 
     @Override
     public void run() {
+        boolean delete = delete();
+        
+        if(delete) {
+            String[] params = new String[]{this.fileId, Integer.toString(this.chunkNo)};
+            String message = Auxiliary.addHeader("REMOVED", params);
+            Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
+        }
+    }
+
+    private boolean delete() {
         File dir = new File("peer" + Peer.senderId + "/backup/" + fileId);
 
         if(dir.exists() && dir.isDirectory()){
@@ -44,14 +53,9 @@ public class RemovedNotice implements Runnable {
                 Peer.stores.get(key).decrement();
             }
             else
-                delete = false;
+                return false;
         } else
-            delete = false;
-        
-        if(delete) {
-            String[] params = new String[]{this.fileId, Integer.toString(this.chunkNo)};
-            String message = Auxiliary.addHeader("REMOVED", params);
-            Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
-        }
+            return false;
+        return true;
     }
 }

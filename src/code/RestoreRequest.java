@@ -10,17 +10,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class RestoreRequest implements Runnable {
-
-    private File file;
     private String file_path; 
     private String fileId;
     private ArrayList<byte[]> chunksContent = new ArrayList<>();
 
     RestoreRequest (String fp) {
         this.file_path = fp;
-        this.file = new File(fp);
 
-        this.fileId = Auxiliary.encodeFileId(file);
+        this.fileId = Auxiliary.encodeFileId(new File(fp));
         Peer.restoreRequests.put(this.fileId, this);
     }
 
