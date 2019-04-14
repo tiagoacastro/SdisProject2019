@@ -28,6 +28,12 @@ public class StoreRequest implements Runnable {
 
         this.fileId = Auxiliary.encodeFileId(file);
         Peer.requests.put(this.fileId, this);
+<<<<<<< HEAD
+=======
+        Peer.sent.add(fileId);
+        while(Peer.deletes.contains(fp))
+            Peer.deletes.remove(fp);
+>>>>>>> 095ff719c824303e855953543e8da8d654be1681
     }
 
     public void store(int chunkNo) {

@@ -16,11 +16,15 @@ public class DeleteRequest implements Runnable {
     private ScheduledExecutorService executor;
     private String fileId;
     private boolean first = true;
+    private boolean enhanced;
 
-    public DeleteRequest(ScheduledExecutorService executor, String fp) {
+    public DeleteRequest(ScheduledExecutorService executor, String fp, boolean original, boolean enhanced) {
         this.executor = executor;
+        this.enhanced = enhanced;
 
         this.fileId = Auxiliary.encodeFileId(new File(fp));
+        if(original)
+            Peer.deletes.add(fp);
     }
 
     @Override
@@ -38,8 +42,7 @@ public class DeleteRequest implements Runnable {
 
         first = false;
         String[] params = new String[]{this.fileId};
-        String message = Auxiliary.addHeader("DELETE", params, false);
+        String message = Auxiliary.addHeader("DELETE", params, enhanced);
         Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
-
     }
 }
