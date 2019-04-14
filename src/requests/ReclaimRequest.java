@@ -1,4 +1,8 @@
-package code;
+package requests;
+
+import Utilities.Key;
+import mains.Peer;
+import Utilities.Value;
 
 import java.io.File;
 import java.util.Map;
@@ -9,7 +13,7 @@ public class ReclaimRequest implements Runnable{
     private boolean clean = false;
     private ScheduledExecutorService executor;
 
-    ReclaimRequest(ScheduledExecutorService executor, long maximumSpace) {
+    public ReclaimRequest(ScheduledExecutorService executor, long maximumSpace) {
         this.executor = executor;
         if(maximumSpace != 0)
             Peer.allowedSpace = maximumSpace * 1000;

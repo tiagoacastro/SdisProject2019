@@ -1,9 +1,9 @@
 package channels;
 
-import code.Auxiliary;
-import code.Key;
-import code.Peer;
-import code.Value;
+import Utilities.Auxiliary;
+import Utilities.Key;
+import mains.Peer;
+import Utilities.Value;
 
 import java.io.File;
 import java.io.FileNotFoundException;

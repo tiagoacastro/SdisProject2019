@@ -1,4 +1,4 @@
-package code;
+package Utilities;
 
 public class Value {
     public Integer stores;

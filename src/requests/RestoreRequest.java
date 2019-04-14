@@ -1,7 +1,9 @@
-package code;
+package requests;
 
 import channels.Channel;
 import channels.Mc;
+import Utilities.Auxiliary;
+import mains.Peer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,7 +16,7 @@ public class RestoreRequest implements Runnable {
     private String fileId;
     private ArrayList<byte[]> chunksContent = new ArrayList<>();
 
-    RestoreRequest (String fp) {
+    public RestoreRequest (String fp) {
         this.file_path = fp;
 
         this.fileId = Auxiliary.encodeFileId(new File(fp));
@@ -44,21 +46,18 @@ public class RestoreRequest implements Runnable {
                 return;
 
         byte[] fpBytes = this.file_path.getBytes();
-        StringBuilder result = new StringBuilder();
+        String fileName = "";
 
-        for(byte b : fpBytes)
+        for(int i = 0; i < fpBytes.length; i++)
         {
-            char c = (char) b;
+            char c = (char) fpBytes[i];
 
             if(c == '/')
-                if(result.length() != 0)
-                    result.delete(0, result.length()-1);
+                fileName = "";
 
             else
-                result.append(c);
+                fileName += c;
         }
-
-        String fileName = result.toString();
 
         try {
             out = new FileOutputStream("peer" + Peer.senderId + "/restored/" + fileName);

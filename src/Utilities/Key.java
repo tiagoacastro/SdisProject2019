@@ -1,4 +1,4 @@
-package code;
+package Utilities;
 
 public class Key {
     public final String file;
@@ -14,7 +14,7 @@ public class Key {
         if (this == o) return true;
         if (!(o instanceof Key)) return false;
         Key key = (Key) o;
-        return file.equals(key.file) && chunk.equals(key.chunk);
+        return file.equals(key.file) && chunk == key.chunk;
     }
 
     @Override

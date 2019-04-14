@@ -1,4 +1,6 @@
-package code;
+package Utilities;
+
+import mains.Peer;
 
 import java.io.File;
 import java.io.IOException;

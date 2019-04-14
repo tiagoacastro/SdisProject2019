@@ -1,8 +1,8 @@
 package channels;
 
-import code.Key;
-import code.Peer;
-import code.RestoreRequest;
+import Utilities.Key;
+import mains.Peer;
+import requests.RestoreRequest;
 
 import java.net.InetAddress;
 import java.net.MulticastSocket;

@@ -1,4 +1,9 @@
-package code;
+package requests;
+
+import Utilities.Auxiliary;
+import Utilities.Key;
+import Utilities.Value;
+import mains.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -14,7 +19,7 @@ public class StoreRequest implements Runnable {
     private int rd;
     private ArrayList<Chunk> chunks = new ArrayList<>();
 
-    StoreRequest(ScheduledExecutorService executor, String fp, int rd) {
+    public StoreRequest(ScheduledExecutorService executor, String fp, int rd) {
         this.executor = executor;
         this.rd = rd;
         this.file_path = fp;

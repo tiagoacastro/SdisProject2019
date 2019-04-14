@@ -1,7 +1,11 @@
-package code;
+package requests;
 
 import channels.Channel;
 import channels.Mc;
+import Utilities.Auxiliary;
+import Utilities.Key;
+import mains.Peer;
+import Utilities.Value;
 
 import java.io.File;
 import java.util.Map;
@@ -13,7 +17,7 @@ public class DeleteRequest implements Runnable {
     private String fileId;
     private boolean first = true;
 
-    DeleteRequest(ScheduledExecutorService executor, String fp) {
+    public DeleteRequest(ScheduledExecutorService executor, String fp) {
         this.executor = executor;
 
         this.fileId = Auxiliary.encodeFileId(new File(fp));

@@ -1,7 +1,10 @@
-package code;
+package requests;
 
 import channels.Channel;
 import channels.Mc;
+import Utilities.Auxiliary;
+import Utilities.Key;
+import mains.Peer;
 
 import java.io.File;
 
