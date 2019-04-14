@@ -32,7 +32,7 @@ public class TestApp {
 
         switch(operation)
         {
-            case "BACKUP":
+            case "BACKUP": case "BACKUPENH":
                 if(args.length != 4)
                 {
                     System.err.println("BACKUP correct usage: java TestApp <peer_ap> BACKUP <file path> <replication degree>");
@@ -42,14 +42,17 @@ public class TestApp {
                 file_path = args[2];
                 int rd = Integer.parseInt(args[3]);
                 try {
-                    pi.backup(file_path, rd);
+                  if(operation.equals("BACKUP"))
+                    pi.backup(file_path, rd, false);
+                  else
+                    pi.backup(file_path, rd, true);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                     System.exit(-1);
                 }
                 break;
 
-            case "RESTORE":
+            case "RESTORE": case "RESTOREENH":
                 if(args.length != 3)
                 {
                     System.err.println("RESTORE correct usage: java TestApp <peer_ap> RESTORE <file path>");
@@ -59,14 +62,17 @@ public class TestApp {
                 file_path = args[2];
 
                 try {
-                    pi.restore(file_path);
+                    if(operation.equals("RESTORE"))
+                      pi.restore(file_path, false);
+                    else
+                      pi.restore(file_path, true);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                     System.exit(-1);
                 }
                 break;
 
-            case "DELETE":
+            case "DELETE": case "DELETEENH":
                 if(args.length != 3)
                 {
                     System.err.println("DELETE correct usage: java TestApp <peer_ap> DELETE <file path>");
@@ -75,7 +81,10 @@ public class TestApp {
                 file_path = args[2];
 
                 try {
-                    pi.delete(file_path);
+                  if(operation.equals("DELETE"))
+                    pi.delete(file_path, false);
+                  else
+                    pi.delete(file_path, true);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                     System.exit(-1);

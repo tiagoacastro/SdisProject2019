@@ -228,19 +228,19 @@ public class Peer implements PeerInterface{
     }
 
     @Override
-    public void backup(String file_path, Integer replicationDegree) {
+    public void backup(String file_path, Integer replicationDegree, boolean enhanced) {
         StoreRequest req = new StoreRequest(executor, file_path, replicationDegree);
         executor.submit(req);
     }
 
     @Override
-    public void restore(String file_path) {
+    public void restore(String file_path, boolean enhanced) {
         RestoreRequest req = new RestoreRequest(file_path);
         executor.submit(req);
     }
 
     @Override
-    public void delete(String file_path) {
+    public void delete(String file_path, boolean enhanced) {
         DeleteRequest req = new DeleteRequest(executor, file_path);
         executor.submit(req);
     }
