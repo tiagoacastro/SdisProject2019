@@ -14,9 +14,8 @@ public class ReclaimRequest implements Runnable{
 
     public ReclaimRequest(ScheduledExecutorService executor, long maximumSpace) {
         this.executor = executor;
-        if(maximumSpace != 0)
-            Peer.allowedSpace = maximumSpace*1000;
-        else
+        Peer.allowedSpace = maximumSpace*1000;
+        if(maximumSpace == 0)
             this.clean = true;
     }
 
