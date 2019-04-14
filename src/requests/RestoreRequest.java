@@ -1,7 +1,5 @@
 package requests;
 
-import channels.Channel;
-import channels.Mc;
 import Utilities.Auxiliary;
 import mains.Peer;
 
@@ -55,18 +53,22 @@ public class RestoreRequest implements Runnable {
                 return;
 
         byte[] fpBytes = this.file_path.getBytes();
-        String fileName = "";
+        StringBuilder result = new StringBuilder();
 
-        for(int i = 0; i < fpBytes.length; i++)
+        for(byte b : fpBytes)
         {
-            char c = (char) fpBytes[i];
+            char c = (char) b;
 
-            if(c == '/')
-                fileName = "";
+            if(c == '/') {
+                if(result.length() != 0)
+                    result.delete(0, result.length());
+            }
 
             else
-                fileName += c;
+                result.append(c);
         }
+
+        String fileName = result.toString();
 
         try {
             out = new FileOutputStream("peer" + Peer.senderId + "/restored/" + fileName);

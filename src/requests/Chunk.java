@@ -52,7 +52,7 @@ public class Chunk implements Runnable{
             System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
             System.arraycopy(body, 0, message, headerBytes.length, body.length);
 
-            Channel.sendPacketBytes(Mdb.socket, message, Mdb.address, Mdb.port);
+            Channel.sendPacketBytes(message, Mdb.address, Mdb.port);
             sends++;
             if(sends == 5){
                 System.out.println("too many sends of #" + chunkNo);

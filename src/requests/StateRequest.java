@@ -14,7 +14,7 @@ public class StateRequest implements Runnable{
 
     public String getStateMessage()
     {
-        while(stateMessage == "")
+        while(stateMessage.equals(""))
         {}
         return this.stateMessage;
     }

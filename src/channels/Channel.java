@@ -1,13 +1,13 @@
 package channels;
 
+import mains.Peer;
+
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Arrays;
 
 public abstract class Channel implements Runnable{
+
     static InetAddress getAddress(String address) {
         try {
             return InetAddress.getByName(address);
@@ -58,19 +58,19 @@ public abstract class Channel implements Runnable{
         return Arrays.copyOf(msg, msg.length - paddingZeros + 1);
     }
 
-    static void sendPacket(MulticastSocket socket, String message, InetAddress address, int port) {
+    static void sendPacket(String message, InetAddress address, int port) {
         DatagramPacket packet = new DatagramPacket(message.getBytes(), message.getBytes().length, address, port);
-        auxiliar(socket, packet);
+        auxiliar(packet);
     }
 
-    public static void sendPacketBytes(MulticastSocket socket, byte[] message, InetAddress address, int port) {
+    public static void sendPacketBytes(byte[] message, InetAddress address, int port) {
         DatagramPacket packet = new DatagramPacket(message, message.length, address, port);
-        auxiliar(socket, packet);
+        auxiliar(packet);
     }
 
-    private static void auxiliar(MulticastSocket socket, DatagramPacket packet) {
+    private static void auxiliar(DatagramPacket packet) {
         try {
-            socket.send(packet);
+            Peer.socket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);

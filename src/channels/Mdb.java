@@ -131,7 +131,7 @@ public class Mdb extends Channel{
                                     Peer.stores.put(key, value);
                                 }
 
-                                sendPacket(Mc.socket, message, Mc.address, Mc.port);
+                                sendPacket(message, Mc.address, Mc.port);
                             }
                         }
                     }

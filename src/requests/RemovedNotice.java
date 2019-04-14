@@ -24,7 +24,7 @@ public class RemovedNotice implements Runnable {
         if(delete) {
             String[] params = new String[]{this.fileId, Integer.toString(this.chunkNo)};
             String message = Auxiliary.addHeader("REMOVED", params, false);
-            Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
+            Channel.sendPacketBytes(message.getBytes(), Mc.address, Mc.port);
         }
     }
 

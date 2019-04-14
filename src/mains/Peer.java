@@ -10,6 +10,8 @@ import channels.Mdb;
 import channels.Mdr;
 
 import java.io.*;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class Peer implements PeerInterface{
     public static String version;
     public static int senderId;
+    public static DatagramSocket socket;
     public static ScheduledExecutorService executor;
     public static HashMap<String, StoreRequest> requests = new HashMap<>();
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
@@ -352,6 +355,13 @@ public class Peer implements PeerInterface{
         if(version.equals("1.1"))
             loadDeletes();
 
+        try {
+            socket = new DatagramSocket();
+        } catch(SocketException e){
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
         String mcAddr = args[3];
         int mcPort = Integer.parseInt(args[4]);
 
@@ -371,7 +381,7 @@ public class Peer implements PeerInterface{
             String[] params = new String[]{};
             String message = Auxiliary.addHeader("JOIN", params, true);
             System.out.println("Sending Join");
-            Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
+            Channel.sendPacketBytes(message.getBytes(), Mc.address, Mc.port);
 
             for (String file : Peer.deletes) {
                 DeleteRequest del = new DeleteRequest(Peer.executor, file, false, true);

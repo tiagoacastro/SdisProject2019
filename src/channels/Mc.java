@@ -119,7 +119,7 @@ public class Mc extends Channel{
                                                 System.arraycopy(headerBytes, 0, putChunkMessage, 0, headerBytes.length);
                                                 System.arraycopy(body, 0, putChunkMessage, headerBytes.length, body.length);
 
-                                                Channel.sendPacketBytes(Mdb.socket, putChunkMessage, Mdb.address, Mdb.port);
+                                                Channel.sendPacketBytes(putChunkMessage, Mdb.address, Mdb.port);
                                             }
                                         }
                                     }
@@ -176,7 +176,7 @@ public class Mc extends Channel{
                                         System.arraycopy(headerBytes, 0, getChunkMessage, 0, headerBytes.length);
                                         System.arraycopy(body, 0, getChunkMessage, headerBytes.length, body.length);
 
-                                        Channel.sendPacketBytes(Mdr.socket, getChunkMessage, Mdr.address, Mdr.port);
+                                        Channel.sendPacketBytes(getChunkMessage, Mdr.address, Mdr.port);
                                     }
 
                                     chunksReceived.clear();
