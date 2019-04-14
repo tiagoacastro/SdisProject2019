@@ -26,12 +26,8 @@ public class Peer implements PeerInterface{
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Value> stores = new HashMap<>();
     public static HashMap<String, Integer> rds = new HashMap<>();
-<<<<<<< HEAD
     public static HashMap<String, Integer> sent = new HashMap<>();
-=======
-    public static ArrayList<String> sent = new ArrayList<>();
     public static ArrayList<String> deletes = new ArrayList<>();
->>>>>>> 095ff719c824303e855953543e8da8d654be1681
     public static long allowedSpace = 100000000;
 
     private static void loadRds(){
