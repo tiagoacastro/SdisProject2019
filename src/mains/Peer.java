@@ -240,25 +240,25 @@ public class Peer implements PeerInterface{
     @Override
     public void backup(String file_path, Integer replicationDegree) {
         StoreRequest req = new StoreRequest(executor, file_path, replicationDegree);
-        executor.schedule(req, 0, TimeUnit.SECONDS);
+        executor.submit(req);
     }
 
     @Override
     public void restore(String file_path) {
         RestoreRequest req = new RestoreRequest(file_path);
-        executor.schedule(req, 0, TimeUnit.SECONDS);
+        executor.submit(req);
     }
 
     @Override
     public void delete(String file_path) {
         DeleteRequest req = new DeleteRequest(executor, file_path);
-        executor.schedule(req, 0, TimeUnit.SECONDS);
+        executor.submit(req);
     }
 
     @Override
     public void reclaim(long maximum_space) {
         ReclaimRequest req = new ReclaimRequest(executor, maximum_space);
-        executor.schedule(req, 0, TimeUnit.SECONDS);
+        executor.submit(req);
     }
 
     @Override
@@ -391,22 +391,22 @@ public class Peer implements PeerInterface{
             }
 
             StoreRequest req = new StoreRequest(executor, file_path, rd);
-            executor.schedule(req, 0, TimeUnit.SECONDS);
+            executor.submit(req);
 
             DeleteRequest req = new DeleteRequest(executor, file_path);
-            executor.schedule(req, 0, TimeUnit.SECONDS);
+            executor.submit(req);
 
             RestoreRequest req = new RestoreRequest(executor, file_path);
-            executor.schedule(req, 0, TimeUnit.SECONDS);
+            executor.submit(req);
 
             ReclaimRequest req = new ReclaimRequest(executor, 400000);
-            executor.schedule(req, 0, TimeUnit.SECONDS);
+            executor.submit(req);
 
         }
 
         if(senderId == 2){
             ReclaimRequest req = new ReclaimRequest(executor, 100000);
-            executor.schedule(req, 0, TimeUnit.SECONDS);
+            executor.submit(req);
         }
 */
         try {

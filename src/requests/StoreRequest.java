@@ -9,7 +9,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class StoreRequest implements Runnable {
     private ScheduledExecutorService executor;
@@ -87,6 +86,6 @@ public class StoreRequest implements Runnable {
         splitIntoChunks();
 
         for(Chunk c : chunks)
-            executor.schedule(c, 0, TimeUnit.SECONDS);
+            executor.submit(c);
     }
 }

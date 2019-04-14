@@ -7,7 +7,6 @@ import Utilities.Value;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class ReclaimRequest implements Runnable{
     private boolean clean = false;
@@ -29,7 +28,7 @@ public class ReclaimRequest implements Runnable{
                     for (String s : files) {
                         File currentFile = new File(directory.getPath(), s);
                         RemovedNotice not = new RemovedNotice(directory.getName(), Integer.parseInt(currentFile.getName().substring(3)));
-                        executor.schedule(not , 0, TimeUnit.SECONDS);
+                        executor.submit(not);
                     }
                     if (!directory.delete())
                         throw new Exception("couldn't delete directory");
@@ -78,7 +77,7 @@ public class ReclaimRequest implements Runnable{
 
             if(value.stores > Peer.rds.get(key.file)){
                 RemovedNotice not = new RemovedNotice(key.file,key.chunk);
-                executor.schedule(not , 0, TimeUnit.SECONDS);
+                executor.submit(not);
 
                 if(Peer.getUsedSpace() <= Peer.allowedSpace)
                     return;
@@ -91,7 +90,7 @@ public class ReclaimRequest implements Runnable{
                 Key key = entry.getKey();
 
                 RemovedNotice not = new RemovedNotice(key.file,key.chunk);
-                executor.schedule(not , 0, TimeUnit.SECONDS);
+                executor.submit(not);
 
                 if(Peer.getUsedSpace() <= Peer.allowedSpace){
                     return;
@@ -104,7 +103,7 @@ public class ReclaimRequest implements Runnable{
             if(value.stores != 0) {
                 Key key = entry.getKey();
                 RemovedNotice not = new RemovedNotice(key.file, key.chunk);
-                executor.schedule(not, 0, TimeUnit.SECONDS);
+                executor.submit(not);
 
                 if (Peer.getUsedSpace() <= Peer.allowedSpace)
                     return;
