@@ -263,7 +263,10 @@ public class Peer implements PeerInterface{
 
     @Override
     public String state() {
-        StringBuilder result = new StringBuilder();
+        StateRequest req = new StateRequest();
+        executor.submit(req);
+        return req.getStateMessage();
+ /*       StringBuilder result = new StringBuilder();
         result.append("Backups initiated\n\n");
         int i = 0;
 
@@ -322,7 +325,7 @@ public class Peer implements PeerInterface{
             }
         }
 
-        return result.toString();
+        return result.toString();*/
     }
 
     private static class Hook extends Thread{
