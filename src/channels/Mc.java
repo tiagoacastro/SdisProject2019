@@ -76,7 +76,9 @@ public class Mc extends Channel{
         while(true) {
             byte[] msg = getPacketMessage(socket);
             if(msg != null) {
-                String message = new String(msg);
+                String message = new String(msg).replaceAll("\0", "");
+
+                if (message != null) {
                     String[] tokens = message.split(" ");
                     if (Integer.parseInt(tokens[2]) != Peer.senderId) {
                         Key key = null;
@@ -190,6 +192,7 @@ public class Mc extends Channel{
                                 }
                                 break;
                         }
+                    }
                 }
             }
         }
