@@ -13,7 +13,10 @@ public class RemovedNotice implements Runnable {
     RemovedNotice(String fileId, int chunkNo) {
         this.fileId = fileId;
         this.chunkNo = chunkNo;
+    }
 
+    @Override
+    public void run() {
         File dir = new File("peer" + Peer.senderId + "/backup/" + fileId);
 
         if(dir.exists() && dir.isDirectory()){
@@ -44,10 +47,7 @@ public class RemovedNotice implements Runnable {
                 delete = false;
         } else
             delete = false;
-    }
-
-    @Override
-    public void run() {
+        
         if(delete) {
             String[] params = new String[]{this.fileId, Integer.toString(this.chunkNo)};
             String message = Auxiliary.addHeader("REMOVED", params);
