@@ -265,9 +265,6 @@ public class Peer implements PeerInterface{
     private static class Hook extends Thread{
         @Override
         public void run() {
-            Mc.socket.close();
-            Mdb.socket.close();
-            Mdr.socket.close();
             saveSpace();
             saveRds();
             saveStores();
