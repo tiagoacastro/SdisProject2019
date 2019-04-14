@@ -26,16 +26,20 @@ public class DeleteRequest implements Runnable {
     @Override
     public void run() {
         if(first)
+        {
             for (Map.Entry<Key, Value> entry : Peer.stores.entrySet()) {
                 Key k = entry.getKey();
 
                 if (k.file.equals(fileId))
                     entry.getValue().stores = 0;
             }
+            executor.schedule(this, 1, TimeUnit.SECONDS);
+        }
+
         first = false;
         String[] params = new String[]{this.fileId};
         String message = Auxiliary.addHeader("DELETE", params);
         Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
-        executor.schedule(this, 1, TimeUnit.SECONDS);
+
     }
 }

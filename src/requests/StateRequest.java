@@ -23,7 +23,7 @@ public class StateRequest implements Runnable{
     public void run() {
         StringBuilder builder = new StringBuilder();
         builder.append("Backups initiated\n\n");
-        int i = 0;
+        int i = 1;
 
         for(Map.Entry<String, StoreRequest> entry : Peer.requests.entrySet()) {
             String fileId = entry.getKey();

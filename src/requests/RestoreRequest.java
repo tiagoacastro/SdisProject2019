@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class RestoreRequest implements Runnable {
-    private String file_path; 
+    private String file_path;
     private String fileId;
     private ArrayList<byte[]> chunksContent = new ArrayList<>();
 
@@ -52,12 +52,13 @@ public class RestoreRequest implements Runnable {
         {
             char c = (char) b;
 
-            if(c == '/')
+            if(c == '/') {
                 if(result.length() != 0)
-                    result.delete(0, result.length()-1);
+                    result.delete(0, result.length());
+                  }
 
-                else
-                    result.append(c);
+            else
+                result.append(c);
         }
 
         String fileName = result.toString();
