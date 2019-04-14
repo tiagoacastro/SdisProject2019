@@ -10,13 +10,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ScheduledExecutorService;
+
 
 public class RestoreRequest implements Runnable {
     private String file_path;
     private String fileId;
-    private ArrayList<byte[]> chunksContent = new ArrayList<>();
+    private ScheduledExecutorService executor;
+    private int chunksReceived = 0;
+    private ArrayList<RestoredChunk> chunks = new ArrayList<>();
+    private int numberChunks;
 
-    public RestoreRequest (String fp) {
+   public RestoreRequest (ScheduledExecutorService executor, String fp) {
+        this.executor = executor;
         this.file_path = fp;
 
         this.fileId = Auxiliary.encodeFileId(new File(fp));
@@ -25,10 +31,13 @@ public class RestoreRequest implements Runnable {
 
     public synchronized void receiveChunk(int chunkNo, byte[] body)
     {
-        if(this.chunksContent.size() == chunkNo) {
-            this.chunksContent.add(body);
-            notifyAll();
-        }
+      if(this.chunks.get(chunkNo).getBody() == null) {
+          this.chunks.get(chunkNo).addBody(body);
+          this.chunksReceived++;
+
+          if(this.chunksReceived == this.numberChunks)
+              notifyAll();
+            }
     }
 
     private void createFile()
@@ -46,22 +55,18 @@ public class RestoreRequest implements Runnable {
                 return;
 
         byte[] fpBytes = this.file_path.getBytes();
-        StringBuilder result = new StringBuilder();
+        String fileName = "";
 
-        for(byte b : fpBytes)
+        for(int i = 0; i < fpBytes.length; i++)
         {
-            char c = (char) b;
+            char c = (char) fpBytes[i];
 
-            if(c == '/') {
-                if(result.length() != 0)
-                    result.delete(0, result.length());
-                  }
+            if(c == '/')
+                fileName = "";
 
             else
-                result.append(c);
+                fileName += c;
         }
-
-        String fileName = result.toString();
 
         try {
             out = new FileOutputStream("peer" + Peer.senderId + "/restored/" + fileName);
@@ -71,9 +76,11 @@ public class RestoreRequest implements Runnable {
         }
         try {
 
-            for(byte[] chunkBody : this.chunksContent) {
+            for(RestoredChunk chunk : this.chunks) {
 
-                for (byte b : chunkBody)
+                byte[] body = chunk.getBody();
+
+                for (byte b : body)
                     out.write((char) b);
             }
 
@@ -86,23 +93,22 @@ public class RestoreRequest implements Runnable {
 
     @Override
     public synchronized void run() {
-        int chunkNo = 0;
 
-        do {
-            String[] params = new String[]{this.fileId, String.valueOf(chunkNo)};
-            String message = Auxiliary.addHeader("GETCHUNK", params, false);
-            Channel.sendPacketBytes(Mc.socket, message.getBytes(), Mc.address, Mc.port);
+        numberChunks = Peer.sent.get(this.fileId);
 
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        for(int i = 0; i < this.numberChunks; i++)
+        {
+            RestoredChunk rc = new RestoredChunk(i, this.fileId);
+            this.chunks.add(rc);
+            executor.submit(rc);
+        }
 
-            chunkNo++;
-
-        } while (this.chunksContent.get(chunkNo - 1).length == 64000);
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         createFile();
-    }
+      }
 }

@@ -25,7 +25,7 @@ public class Peer implements PeerInterface{
     public static HashMap<String, RestoreRequest> restoreRequests = new HashMap<>();
     public static HashMap<Key, Value> stores = new HashMap<>();
     public static HashMap<String, Integer> rds = new HashMap<>();
-    public static ArrayList<String> sent = new ArrayList<>();
+    public static HashMap<String, Integer> sent = new HashMap<>();
     public static long allowedSpace = 100000000;
 
     private static void loadRds(){
@@ -104,8 +104,10 @@ public class Peer implements PeerInterface{
                     FileReader fr = new FileReader("peer" + Peer.senderId + "/sent.txt");
                     BufferedReader br = new BufferedReader(fr);
                     String line;
-                    while ((line = br.readLine()) != null)
-                        sent.add(line);
+                    while ((line = br.readLine()) != null) {
+                        String[] tokens = line.split(" ");
+                        sent.put(tokens[0], Integer.parseInt(tokens[1]));
+                    }
                     br.close();
                     fr.close();
                 } catch (Exception e) {
@@ -207,8 +209,11 @@ public class Peer implements PeerInterface{
             System.exit(-1);
         }
 
-        for (String file : sent)
-            out.println(file);
+        for(Map.Entry<String, Integer> entry : sent.entrySet()) {
+            String key = entry.getKey();
+            Integer value = entry.getValue();
+            out.println(key + " " + value);
+        }
 
         closeOutputStreams(fs, out);
     }
@@ -239,7 +244,7 @@ public class Peer implements PeerInterface{
 
     @Override
     public void restore(String file_path, boolean enhanced) {
-        RestoreRequest req = new RestoreRequest(file_path);
+        RestoreRequest req = new RestoreRequest(executor, file_path);
         executor.submit(req);
     }
 
